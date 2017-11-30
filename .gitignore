@@ -1,0 +1,13 @@
+## ignore files
+
+DatagramManager/nbproject/private
+DatagramManager/build
+DatagramManager/dist
+
+DatagramSocket/nbproject
+DatagramSocket/build
+DatagramSocket/dist
+
+GraphGenerator/nbproject
+GraphGenerator/build
+GraphGenerator/dist
