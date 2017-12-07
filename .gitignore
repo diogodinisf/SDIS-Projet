@@ -1,13 +1,9 @@
 ## ignore files
 
-DatagramManager/nbproject/private
-DatagramManager/build
-DatagramManager/dist
+Node/build/
+Node/dist/
+Node/nbproject/private
 
-DatagramSocket/nbproject
-DatagramSocket/build
-DatagramSocket/dist
-
-GraphGenerator/nbproject
-GraphGenerator/build
-GraphGenerator/dist
+sdis/build/
+sdis/dist
+sdis/nbproject/private
