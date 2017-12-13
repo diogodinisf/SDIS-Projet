@@ -18,29 +18,26 @@ import java.util.logging.Logger;
  * @author eduardo
  */
 public class threadToSend implements Runnable {
-    int id;
-    
-    public threadToSend(int id){
-        this.id = id;
-    }
+
     @Override
     public void run(){
         
         try {
-            nodeDatagramSocket socket = new nodeDatagramSocket(id);
-        
+            nodeDatagramSocket socket = new nodeDatagramSocket();
+   
+       
             InetAddress address = InetAddress.getByName("localhost");
             while(true){
          
-                Scanner scanner = new Scanner(System.in);
-                System.out.print("Enter your msg: ");
-                String str = scanner.nextLine();
-                System.out.print("To which node ?: ");
-                int toId = scanner.nextInt();
-                int PORT = 5555 + toId; //porta do no que quer enviar
+               // Scanner scanner = new Scanner(System.in);
+                //System.out.print("Enter your msg: ");
+                //String str = scanner.nextLine();
+                //System.out.print("To which node ?: ");
+                //int toId = scanner.nextInt();
+                //int PORT = (int) nodeDatagramSocket.ports[toId];
                 
-                DatagramPacket packet = new DatagramPacket(str.getBytes(), str.length(), address, PORT);
-                socket.send(packet);
+                //DatagramPacket packet = new DatagramPacket(str.getBytes(), str.length(), address, PORT);
+                //socket.send(packet);
             }
         } catch (SocketException ex) {
             Logger.getLogger(threadToSend.class.getName()).log(Level.SEVERE, null, ex);
