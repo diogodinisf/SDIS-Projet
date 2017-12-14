@@ -17,16 +17,13 @@ import java.util.logging.Logger;
  * @author eduardo
  */
 public class threadToReceive implements Runnable {
-    int id;
+
+    static DatagramSocket socket;
     
-    public threadToReceive(int id){
-        this.id = id;
-    }
     @Override
     public void run(){
         try {
-            int PORT = 5555 + id;
-            DatagramSocket socket = new DatagramSocket(PORT);
+            socket = new DatagramSocket(Node.getPort());
             while(true){
                 byte[] receiveData=new byte[ 64*1024 ];
                 DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
