@@ -29,7 +29,7 @@ public class threadToReceive implements Runnable {
                 DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
                 socket.receive(packet);
                 String str = new String(packet.getData(), 0, packet.getLength());
-                System.out.println(str);      
+               // System.out.println(str);      
             }
         } catch (SocketException ex) {
             Logger.getLogger(threadToReceive.class.getName()).log(Level.SEVERE, null, ex);

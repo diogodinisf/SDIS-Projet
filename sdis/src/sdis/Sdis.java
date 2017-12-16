@@ -6,17 +6,20 @@
 package sdis;
 
 
-import edu.princeton.cs.algs4.DijkstraUndirectedSP;
+//import edu.princeton.cs.algs4.DijkstraUndirectedSP;
 import edu.princeton.cs.algs4.Edge;
-import edu.princeton.cs.algs4.EdgeWeightedGraph;
+
+//import edu.princeton.cs.algs4.EdgeWeightedGraph;
 import edu.princeton.cs.algs4.StdOut;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import static java.lang.Math.random;
 import java.net.*;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 
 /**
  * Manager da rede. Multicast group no 228.5.6.7:6789. Nós ao serem criados têm de avisar o multicast group da porta onde estao a ouvir.
@@ -38,15 +41,15 @@ public class Sdis {
             DijkstraUndirectedSP sp = new DijkstraUndirectedSP(G, s);
             for (int t = 0; t < G.V(); t++) {
                 if (sp.hasPathTo(t)) {
-                    StdOut.printf("%d to %d (%.2f)  ", s, t, sp.distTo(t));
+                  //  StdOut.printf("%d to %d (%.2f)  ", s, t, sp.distTo(t));
                     for (Edge e : sp.pathTo(t)) {
-                        StdOut.print(e + "   lol");
+                   //     StdOut.print(e + "   lol");
                     }
-                    StdOut.println();
+                   // StdOut.println();
                     val[t]= sp.distTo(t);
                 }
                 else {
-                    StdOut.printf("%d to %d         no path\n", s, t);
+                    //StdOut.printf("%d to %d         no path\n", s, t);
                 }
             }
             sendArray(val,s);
@@ -89,7 +92,7 @@ public class Sdis {
             byte[] obj= baos.toByteArray();
             baos.close();
             DatagramPacket packet = new DatagramPacket(obj, obj.length, address, (int) ports[nodeId]+10000);
-            System.out.println("enviado para o no "+nodeId +"para a porta "+ports[nodeId]);
+          //  System.out.println("enviado para o no "+nodeId +"para a porta "+ports[nodeId]);
             s.send(packet);
         } catch (IOException ex) {
             Logger.getLogger(Sdis.class.getName()).log(Level.SEVERE, null, ex);
@@ -106,6 +109,7 @@ public class Sdis {
         InetAddress group = InetAddress.getByName("228.5.6.7");
         MulticastSocket s = new MulticastSocket (6789);
         s.joinGroup(group);
+        EdgeWeightedGraph G= new EdgeWeightedGraph(Nodes); 
         
         while(true){
             byte[] receiveData=new byte[ 1024 ];
@@ -117,18 +121,25 @@ public class Sdis {
             //double [] temp_ports = new double[Nodes];
             ports=Arrays.copyOf(ports, Nodes);
             ports[Nodes-1]=Integer.parseInt(split[1]);
-            Edges = Nodes +1;
-            if (Nodes > 1){
-                EdgeWeightedGraph G = new EdgeWeightedGraph(Nodes,Edges);
+            
+            if (Nodes == 1){
+                G= new EdgeWeightedGraph(Nodes); 
+            }
+            else{
+                G.addNode();
+                int vertice1 = (int)(Math.random() * (Nodes-1));
+                int vertice2 = Nodes-1 ;
 
-                StdOut.println(G);
+                Edge E = new Edge (vertice1, vertice2, Math.random());
+                G.addEdge(E);
+              //  StdOut.println(G);
                 makeDjikstra(G);
             }
-            System.out.println("I know these ports");
-            for (int i =0 ; i< Nodes ; i++){
+           // System.out.println("I know these ports");
+            /*for (int i =0 ; i< Nodes ; i++){
                 System.out.println(ports[i]);
-            }
-            System.out.println("end of known ports");
+            }*/
+            //System.out.println("end of known ports");
             sendPorts(ports, Nodes-1);
                    
         }

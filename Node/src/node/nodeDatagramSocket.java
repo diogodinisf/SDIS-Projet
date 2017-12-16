@@ -29,8 +29,8 @@ public class nodeDatagramSocket {
     public nodeDatagramSocket() throws SocketException{
         socket= new DatagramSocket();
         //this.selfId = id;
-        DatagramSocket socketDelay = new DatagramSocket(Node.getPort() + 5000);
-        DatagramSocket socketPorts = new DatagramSocket(Node.getPort() + 10000);
+        DatagramSocket socketDelay = new DatagramSocket(Node.getPort() + 5000); //receber do master os delays
+        DatagramSocket socketPorts = new DatagramSocket(Node.getPort() + 10000); //receber do master as portas AO INICAR O NO
         Thread threadDelay = new Thread(new getDataFromControler(socketDelay, "delay"));
         threadDelay.start();
         Thread threadPorts = new Thread(new getDataFromControler(socketPorts, "ports"));
@@ -78,7 +78,7 @@ public class nodeDatagramSocket {
         public void run(){
             
             try {
-                System.out.println("waiting "+ wait + " seconds");
+               // System.out.println("waiting "+ wait + " seconds");
                 Thread.sleep((long) wait);
                 socket.send(packet);
             } catch (InterruptedException ex) {
@@ -116,6 +116,7 @@ public class nodeDatagramSocket {
 
     @Override
     public void run(){
+        boolean tempo = false;
         while(true){
             byte[] receiveData=new byte[ 64*1024 ];
         
@@ -138,22 +139,29 @@ public class nodeDatagramSocket {
                 double[] data = (double[]) iStream.readObject();
                 iStream.close();
                 if(dataRecv.equals("delay")){
-                    System.out.println("New delay vectors");
+                  //  System.out.println("New delay vectors");
                     delayVal =new double[data.length];
                     delayVal = data;
-                    for(int i =0; i< delayVal.length ; i++){
+                   /* for(int i =0; i< delayVal.length ; i++){
                         System.out.println(delayVal[i]);
+                    }*/
+                    //System.out.println("recebi o delay");
+                    if (tempo==false){
+                        double total_time = System.currentTimeMillis();
+                        System.out.println("no "+ Node.id +" demorou "+(total_time - Node.time_init));
+                        tempo=true;
                     }
-                    System.out.println("recebi o delay");
+                    
+
                 }
                 else if (dataRecv.equals("ports")){
-                    System.out.println("New port vectors");
+                    //System.out.println("New port vectors");
                     ports = new double[data.length];
                     ports = data;
-                    for(int i =0; i< ports.length ; i++){
+                    /*for(int i =0; i< ports.length ; i++){
                         System.out.println(ports[i]);
                     }
-                    System.out.println("recebi as ports");
+                    System.out.println("recebi as ports");*/
                 }
                 
 

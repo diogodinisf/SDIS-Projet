@@ -19,6 +19,8 @@ import java.util.logging.Logger;
  */
 public class Node {
     private static int port;
+    static double time_init;
+    static int id ;
     
     public static void joinMulticastGroup(int id){
         String group = "228.5.6.7";
@@ -41,11 +43,12 @@ public class Node {
      */
     public static void main(String[] args) throws SocketException, IOException, InterruptedException {
 
-        System.out.print("Sou o Node: ");
-        System.out.println(args[1]);
-        int id = Integer.parseInt(args[1]);
-
-        port = 35555 + id;
+       // System.out.print("Sou o Node: ");
+        //System.out.println(args[1]);
+        
+        id = Integer.parseInt(args[1]);
+        time_init = System.currentTimeMillis();
+        port = 45555 + id;
         
         Thread thread_recv = new Thread(new threadToReceive()); //multiplicar para checkar
         thread_recv.start();
@@ -53,7 +56,7 @@ public class Node {
         thread_send.start();
         
         
-        sleep(1000); //mamke sure the threads are created
+        //sleep(1000); //mamke sure the threads are created
         joinMulticastGroup(id);
  
     
