@@ -7,3 +7,5 @@ Node/nbproject/private
 sdis/build/
 sdis/dist
 sdis/nbproject/private
+
+*.directory
