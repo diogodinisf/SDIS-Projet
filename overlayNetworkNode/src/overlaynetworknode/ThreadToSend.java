@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package node;
+package overlaynetworknode;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -17,17 +17,22 @@ import java.util.logging.Logger;
  *
  * @author eduardo
  */
-public class threadToSend implements Runnable {
-
+public class ThreadToSend implements Runnable {
+    private static int port;
+    
+    public ThreadToSend(int port) {
+        ThreadToSend.port = port;
+    }
+    
+    
     @Override
     public void run(){
         
         try {
-            nodeDatagramSocket socket = new nodeDatagramSocket();
-   
-       
+            NodeDatagramSocket socket = new NodeDatagramSocket(port);
             InetAddress address = InetAddress.getByName("localhost");
-            while(true){
+            
+            while (true) {
          
                // Scanner scanner = new Scanner(System.in);
                 //System.out.print("Enter your msg: ");
@@ -39,10 +44,11 @@ public class threadToSend implements Runnable {
                 //DatagramPacket packet = new DatagramPacket(str.getBytes(), str.length(), address, PORT);
                 //socket.send(packet);
             }
+            
         } catch (SocketException ex) {
-            Logger.getLogger(threadToSend.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ThreadToSend.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(threadToSend.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ThreadToSend.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }

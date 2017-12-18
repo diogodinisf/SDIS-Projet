@@ -9,3 +9,4 @@ sdis/dist
 sdis/nbproject/private
 
 *.directory
+/overlayNetworkNode/nbproject/private/

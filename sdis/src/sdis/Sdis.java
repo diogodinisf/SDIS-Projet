@@ -29,42 +29,35 @@ public class Sdis {
     
     static int Nodes = 0;
     static int Edges = 0;
-    static double[] ports = new double[1];
+    static Integer[] ports = new Integer[1];
     
     // For each node calculates the shortest path to every other node. Calls sendArray() to send an array with the
     // transmission delay to each node.
     // @params: EdgeWeightedGraph G - Graph made using edu.princeton.cs.algs4.EdgeWeightedGraph;
-    public static void makeDjikstra(EdgeWeightedGraph G){
+    public static void makeDjikstra(EdgeWeightedGraph G) {
         
-        for (int s = 0; s< G.V() ; s++){
-            double[]val=new double[G.V()];
+        for (int s = 0; s < G.V(); s++) {
+            double[][] val = new double[G.V()][2];
+            
             DijkstraUndirectedSP sp = new DijkstraUndirectedSP(G, s);
+            
             for (int t = 0; t < G.V(); t++) {
                 if (sp.hasPathTo(t)) {
-                  //  StdOut.printf("%d to %d (%.2f)  ", s, t, sp.distTo(t));
-                    for (Edge e : sp.pathTo(t)) {
-                   //     StdOut.print(e + "   lol");
-                    }
-                   // StdOut.println();
-                    val[t]= sp.distTo(t);
-                }
-                else {
-                    //StdOut.printf("%d to %d         no path\n", s, t);
+                    val[t][0] = ports[t];
+                    val[t][1] = sp.distTo(t);
                 }
             }
-            sendArray(val,s);
-            
+            sendArray(val, s);   
         }
-        
     }
     
         
     //Sends to each node, via UDP, and array of doubles with the weights to every other node.
     //@params: data - array with wights, calculated in makeDjikstra(); id - node id from command line.
-    public static void sendArray(double[] data, int id){
-        int PORT = (int)ports[id]+5000;
-        try
-        {
+    public static void sendArray(double[][] data, int id){
+        int PORT = (int)ports[id] + 5000;
+        
+        try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
             ObjectOutputStream oos = new ObjectOutputStream(baos);
             oos.writeObject(data);
@@ -75,43 +68,39 @@ public class Sdis {
             InetAddress address = InetAddress.getByName("localhost");
             DatagramPacket packet = new DatagramPacket(obj, obj.length, address, PORT);
             socket.send(packet);
-        }
-        catch(Exception e) {
-            System.out.println("Erro "+e);
+        } catch(Exception e) {
+            System.out.println("Erro " + e);
         } 
     }
     
-    public static void sendPorts (double[] ports, int nodeId) throws SocketException, UnknownHostException{
-        DatagramSocket s= new DatagramSocket();
+    public static void sendPorts (Integer[] ports, int nodeId) throws SocketException, UnknownHostException{
+        DatagramSocket socket = new DatagramSocket();
         InetAddress address = InetAddress.getByName("localhost");
+        
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
             ObjectOutputStream oos = new ObjectOutputStream(baos);
+            
             oos.writeObject(ports);
             oos.close();
             byte[] obj= baos.toByteArray();
             baos.close();
-            DatagramPacket packet = new DatagramPacket(obj, obj.length, address, (int) ports[nodeId]+10000);
-          //  System.out.println("enviado para o no "+nodeId +"para a porta "+ports[nodeId]);
-            s.send(packet);
+            DatagramPacket packet = new DatagramPacket(obj, obj.length, address, ports[nodeId]+10000);
+            //System.out.println("enviado para o no " + nodeId + "para a porta " + ports[nodeId]);
+            socket.send(packet);
         } catch (IOException ex) {
             Logger.getLogger(Sdis.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) throws SocketException, IOException {
-
-        
         //join multicast group
         InetAddress group = InetAddress.getByName("228.5.6.7");
         MulticastSocket s = new MulticastSocket (6789);
         s.joinGroup(group);
         EdgeWeightedGraph G= new EdgeWeightedGraph(Nodes); 
         
-        while(true){
+        while (true) {
             byte[] receiveData=new byte[ 1024 ];
             DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
             s.receive(packet);

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package node;
+package overlaynetworknode;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -20,14 +20,14 @@ import java.util.logging.Logger;
  * @author eduardo
  */
 public class NodeMulticastSocket {
+    private boolean running = true;
+    private final MulticastSocket socket;
     
-    MulticastSocket s;
-    
-    public NodeMulticastSocket (String groupIP, int port) throws UnknownHostException, IOException{
-        
+    public NodeMulticastSocket (String groupIP, int port) throws UnknownHostException, IOException {
         InetAddress group = InetAddress.getByName(groupIP);
-        s = new MulticastSocket (port);
-        s.joinGroup(group);
+        socket = new MulticastSocket (port);
+        
+        socket.joinGroup(group);
         
         Thread thread_recv = new Thread(new ReceiveFromGroup()); //multiplicar para checkar
         thread_recv.start();
@@ -35,28 +35,28 @@ public class NodeMulticastSocket {
     }
     
     public void send (DatagramPacket packet) throws IOException{
-        s.send(packet);
+        socket.send(packet);
     }
     
     public class ReceiveFromGroup implements Runnable {
 
         @Override
-        public void run(){
+        public void run() {
             
-            while(true){
+            while (running) {
                 try {
-                    byte[] receiveData=new byte[ 64*1024 ];
-                    int receivedBytes = 0;
+                    byte[] receiveData = new byte[64 * 1024];
                     DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
-                    s.receive(packet);
+                    socket.receive(packet);
                     String str = new String(packet.getData(), 0, packet.getLength());
                     String[] split = str.split("_");
-                    nodeDatagramSocket.addNode(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+                    
+                    NodeDatagramSocket.addNode(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+                
                 } catch (IOException ex) {
                     Logger.getLogger(NodeMulticastSocket.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-
         }
     }
 }

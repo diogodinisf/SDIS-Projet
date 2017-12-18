@@ -5,6 +5,9 @@
  */
 package node;
 
+import overlaynetworknode.NodeMulticastSocket;
+import overlaynetworknode.ThreadToReceive;
+import overlaynetworknode.ThreadToSend;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -12,57 +15,24 @@ import static java.lang.Thread.sleep;
 import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import overlaynetworknode.OverlayNetworkNode;
 
 /**
  *
  * @author eduardo
  */
 public class Node {
-    private static int port;
-    static double time_init;
-    static int id ;
+    private static int id ;
     
-    public static void joinMulticastGroup(int id){
-        String group = "228.5.6.7";
-        int multicastPort =6789;
-        try {
-            NodeMulticastSocket s = new NodeMulticastSocket(group, multicastPort);
-
-            String str = id + "_"+port;
-            DatagramPacket packet = new DatagramPacket(str.getBytes(), str.length(), InetAddress.getByName(group), multicastPort);
-            s.send(packet);
-        } catch (UnknownHostException ex) {
-            Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) throws SocketException, IOException, InterruptedException {
-
-       // System.out.print("Sou o Node: ");
-        //System.out.println(args[1]);
         
-        id = Integer.parseInt(args[1]);
-        time_init = System.currentTimeMillis();
-        port = 45555 + id;
+        id = Integer.parseInt(args[0]);
+        //System.out.print("Sou o Nó: " + args[0]);
         
-        Thread thread_recv = new Thread(new threadToReceive()); //multiplicar para checkar
-        thread_recv.start();
-        Thread thread_send = new Thread(new threadToSend()); //multiplicar para checkar
-        thread_send.start();
-        
-        
-        //sleep(1000); //mamke sure the threads are created
-        joinMulticastGroup(id);
- 
-    
+        OverlayNetworkNode node = new OverlayNetworkNode(id);
     }   
     
-    public static int getPort() {
-        return port;
+    public static int getId() {
+        return id;
     }
 }
