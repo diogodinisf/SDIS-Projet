@@ -5,13 +5,7 @@
  */
 package node;
 
-import overlaynetworknode.NodeMulticastSocket;
-import overlaynetworknode.ThreadToReceive;
-import overlaynetworknode.ThreadToSend;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import static java.lang.Thread.sleep;
 import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,9 +21,10 @@ public class Node {
     public static void main(String[] args) throws SocketException, IOException, InterruptedException {
         
         id = Integer.parseInt(args[0]);
-        //System.out.print("Sou o Nó: " + args[0]);
+        System.out.println("Sou o Nó: " + id);
         
         OverlayNetworkNode node = new OverlayNetworkNode(id);
+        node.start();
     }   
     
     public static int getId() {

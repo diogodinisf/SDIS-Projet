@@ -26,12 +26,12 @@ public class OverlayNetworkNode {
     }
     
     public void start() {
-        this.port = 45555 + this.id;
+        this.port = 35555 + this.id;
         timeInit = System.currentTimeMillis();
         
-        Thread thread_recv = new Thread(new ThreadToReceive(port)); //multiplicar para checkar
+        Thread thread_recv = new Thread(new ThreadToReceive(port + 5000)); //multiplicar para checkar
         thread_recv.start();
-        Thread thread_send = new Thread(new ThreadToSend(port)); //multiplicar para checkar
+        Thread thread_send = new Thread(new ThreadToSend(port + 10000)); //multiplicar para checkar
         thread_send.start();
         
         joinMulticastGroup();

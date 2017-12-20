@@ -44,7 +44,7 @@ public class NodeDatagramSocket {
     }*/
     
     public NodeDatagramSocket(int port) throws SocketException {
-        socket = new DatagramSocket(port);
+        socket = new DatagramSocket();
         //this.selfId = id;
         
         this.port  = port;
@@ -141,6 +141,7 @@ public class NodeDatagramSocket {
                     
                     for (int i = 0; i < data.length; i++) {
                         nodeMap.put(data[i][0].intValue(), data[i][1]);
+                        System.out.println(data[i][0] + " " + data[i][1]);
                     }
                     
                     if (tempo == false){

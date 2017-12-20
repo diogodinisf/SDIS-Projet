@@ -10,3 +10,5 @@ sdis/nbproject/private
 
 *.directory
 /overlayNetworkNode/nbproject/private/
+/overlayNetworkNode/dist/
+/overlayNetworkNode/build/

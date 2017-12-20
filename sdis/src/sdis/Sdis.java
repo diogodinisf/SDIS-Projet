@@ -106,7 +106,8 @@ public class Sdis {
             s.receive(packet);
             String str = new String(packet.getData(), 0, packet.getLength());
             String[] split = str.split("_");
-            Nodes = Nodes +1;
+            Nodes = Nodes + 1;
+            System.out.println("apareceu um novo nó");
             //double [] temp_ports = new double[Nodes];
             ports=Arrays.copyOf(ports, Nodes);
             ports[Nodes-1]=Integer.parseInt(split[1]);
@@ -129,7 +130,7 @@ public class Sdis {
                 System.out.println(ports[i]);
             }*/
             //System.out.println("end of known ports");
-            sendPorts(ports, Nodes-1);
+            //sendPorts(ports, Nodes-1);
                    
         }
         
