@@ -33,7 +33,6 @@ public class ThreadToSend implements Runnable {
             InetAddress address = InetAddress.getByName("localhost");
             
             while (true) {
-         
                // Scanner scanner = new Scanner(System.in);
                 //System.out.print("Enter your msg: ");
                 //String str = scanner.nextLine();

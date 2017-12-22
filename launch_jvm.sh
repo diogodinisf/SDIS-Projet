@@ -1,6 +1,7 @@
 #!/bin/bash
 
-for i in `seq 1 150`
+for i in `seq 1 5`
 do
-	java -jar "/home/eduardo/SDIS-Projet/Node/dist/Node.jar" SDIS-Projet/Node/src/node/Node.java $i &
+    sleep 1
+	java -jar "Node/dist/Node.jar" $i &
 done

@@ -7,8 +7,6 @@ package node;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import overlaynetworknode.OverlayNetworkNode;
 
 /**
@@ -17,13 +15,13 @@ import overlaynetworknode.OverlayNetworkNode;
  */
 public class Node {
     private static int id ;
+    private static final String MASTER_HOSTNAME = "localhost";
+    private static final int MASTER_PORT = 6789;
     
     public static void main(String[] args) throws SocketException, IOException, InterruptedException {
-        
         id = Integer.parseInt(args[0]);
-        System.out.println("Sou o Nó: " + id);
         
-        OverlayNetworkNode node = new OverlayNetworkNode(id);
+        OverlayNetworkNode node = new OverlayNetworkNode(id, MASTER_HOSTNAME, MASTER_PORT);
         node.start();
     }   
     
