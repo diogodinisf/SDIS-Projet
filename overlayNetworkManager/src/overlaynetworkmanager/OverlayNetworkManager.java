@@ -25,7 +25,7 @@ import java.util.Map;
  * @author eduardo
  */
 public class OverlayNetworkManager {
-    
+    private static boolean running;
     static int Nodes = 0;
     static int Edges = 0;
     static List<Node_type> nodes = new ArrayList<>();
@@ -37,7 +37,7 @@ public class OverlayNetworkManager {
         int s, t;
         
         for (Node_type node : nodes) {
-            Map<Node_type,Double> nodeMap = new HashMap<>();
+            Map<Node_type, Double> nodeMap = new HashMap<>();
             
             s = node.getId();
             DijkstraUndirectedSP sp = new DijkstraUndirectedSP(G, s);
@@ -50,15 +50,34 @@ public class OverlayNetworkManager {
                 }
             }
             
-            printNodesMap(nodeMap);
-            sendOverlayNetwork(node.getPort(), nodeMap);
+            //printNodesMap(nodeMap);
+            sendOverlayNetwork(node.getIp(), node.getPort(), nodeMap);
         }
     }
     
-  
+    // pede a todos os nós para fecharem - porreiro para debugging
+    public static void sendClose() {
+        nodes.forEach((node) -> {
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
+                ObjectOutputStream oos = new ObjectOutputStream(baos);
+                oos.writeObject("close");
+                oos.close();
+                byte[] obj= baos.toByteArray();
+                baos.close();
+                DatagramSocket socket= new DatagramSocket();
+                InetAddress address = InetAddress.getByName(node.getIp());
+                DatagramPacket packet = new DatagramPacket(obj, obj.length, address, node.getPort() + 5000);
+                socket.send(packet);
+            } catch(Exception e) {
+                System.out.println("Erro " + e);
+            }
+        });
+    }
+    
     //Sends to each node, via UDP, and array of doubles with the weights to every other node.
     //@params: data - array with wights, calculated in makeDjikstra(); id - node id from command line.
-    public static void sendOverlayNetwork(int port, Map nodeMap){
+    public void sendOverlayNetwork(String ip, int port, Map nodeMap) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
             ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -67,7 +86,7 @@ public class OverlayNetworkManager {
             byte[] obj= baos.toByteArray();
             baos.close();
             DatagramSocket socket= new DatagramSocket();
-            InetAddress address = InetAddress.getByName("localhost");
+            InetAddress address = InetAddress.getByName(ip);
             DatagramPacket packet = new DatagramPacket(obj, obj.length, address, port + 5000);
             socket.send(packet);
         } catch(Exception e) {
@@ -78,49 +97,40 @@ public class OverlayNetworkManager {
     public void run() throws SocketException, IOException {
         DatagramSocket socket = new DatagramSocket (6789);
         EdgeWeightedGraph G = new EdgeWeightedGraph(Nodes); 
+        running = true;
+        socket.setSoTimeout(5); // para usar com o close
         
-        while (true) {
+        while (running) {
             byte[] receiveData = new byte[1024];
             DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
-            socket.receive(packet);
-            String str = new String(packet.getData(), 0, packet.getLength());
-            String[] split = str.split("_");
             
-            Node_type node;
-            if (split.length > 1) {
-                node = new Node_type(Nodes, split[0], Integer.parseInt(split[1])); // com ip - para futuro
-            } else {
-                node = new Node_type(Nodes, Integer.parseInt(split[0]));
-            }
+            try {
+                socket.receive(packet);
             
-            System.out.println("Apareceu nó com porta: " + node.getPort());
-            nodes.add(node);
             
-            //printNodesList();
-            
-            Nodes = Nodes + 1;
-            if (Nodes == 1) {
-                G = new EdgeWeightedGraph(Nodes); 
-            } else {
-                G.addNode();
-                int vertice1 = (int)(Math.random() * (Nodes - 1));
-                int vertice2 = Nodes - 1 ;
+                String str = new String(packet.getData(), 0, packet.getLength());
+                String[] split = str.split("_");
 
-                Edge E = new Edge(vertice1, vertice2, Math.random());
-                G.addEdge(E);
-                makeDjikstra(G);
+                Node_type node;
+                node = new Node_type(Nodes, split[0], Integer.parseInt(split[1]));
+                nodes.add(node);
+
+                Nodes = Nodes + 1;
+                if (Nodes == 1) {
+                    G = new EdgeWeightedGraph(Nodes); 
+                } else {
+                    G.addNode();
+                    int vertice1 = (int)(Math.random() * (Nodes - 1));
+                    int vertice2 = Nodes - 1 ;
+
+                    Edge E = new Edge(vertice1, vertice2, Math.random());
+                    G.addEdge(E);
+                    makeDjikstra(G);
+                }   
+            } catch (SocketTimeoutException e) { 
+                //do nothing
             }
-           // System.out.println("I know these ports");
-            /*for (int i =0 ; i< Nodes ; i++){
-                System.out.println(ports[i]);
-            }*/
-            //System.out.println("end of known ports");
-            //sendPorts(ports, Nodes-1);
-                   
         }
-        
-        //EdgeWeightedGraph G = new EdgeWeightedGraph(Nodes,Edges);
-        //StdOut.println(G);
     }
         
     public static void printNodesList() {
@@ -135,8 +145,15 @@ public class OverlayNetworkManager {
         });
     }
     
+    public static void close() {
+        running = false;
+        OverlayNetworkManager.sendClose();
+    }
+    
     public static void main(String[] args) throws SocketException, IOException {
         OverlayNetworkManager master = new OverlayNetworkManager();
+        Thread managerScanner = new Thread(new ManagerScanner()); //multiplicar para checkar
+        managerScanner.start();
         master.run();        
     }
 }

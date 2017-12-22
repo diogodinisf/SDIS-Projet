@@ -22,7 +22,9 @@ import java.util.logging.Logger;
  * @author eduardo
  */
 public class NodeDatagramSocket {
-    private static DatagramSocket socket;
+    private boolean running;
+    private final DatagramSocket socket;
+    private final DatagramSocket socketDelay;
     private final int port;
     private Map<Node_type, Double> nodeMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -30,7 +32,7 @@ public class NodeDatagramSocket {
         this.port  = port;
         socket = new DatagramSocket();
         
-        DatagramSocket socketDelay = new DatagramSocket(this.port + 5000);
+        socketDelay = new DatagramSocket(this.port + 5000);
         Thread threadDelay = new Thread(new getOverlayNetworkFromControler(socketDelay));
         threadDelay.start();
     }
@@ -68,7 +70,6 @@ public class NodeDatagramSocket {
 
         @Override
         public void run() {
-            
             try {
                 Thread.sleep((long) wait);
                 socket.send(packet);
@@ -92,8 +93,9 @@ public class NodeDatagramSocket {
         @Override
         public void run() {
             boolean tempo = false;
+            running = true;
             
-            while (true) {
+            while (running) {
                 byte[] receiveData = new byte[64 * 1024];
                 int receivedBytes;
                 
@@ -109,22 +111,36 @@ public class NodeDatagramSocket {
                     }
                     
                     ObjectInputStream iStream = new ObjectInputStream(new ByteArrayInputStream(myObject));
-                    nodeMap.clear();
-                    nodeMap.putAll((Map<Node_type, Double>) iStream.readObject());
-                    iStream.close();
+                    Object object = iStream.readObject();
                     
-                    if (tempo == false){
-                        double total_time = System.currentTimeMillis();
-                        System.out.println("porta " + port + " demorou " + (total_time - OverlayNetworkNode.getInitTime()));
-                        tempo = true;
+                    try {
+                        String toClose = (String)object;
+                        
+                         if (toClose.contentEquals("close")) {
+                        System.out.println("Mandado fechar");
+                        running = false;
+                         }
+                        
+                    } catch (ClassCastException e) {
+                        nodeMap.clear();
+                        nodeMap.putAll((Map<Node_type, Double>)object);
+
+                        if (tempo == false){
+                            double total_time = System.currentTimeMillis();
+                            System.out.println("porta " + port + " demorou " + (total_time - OverlayNetworkNode.getInitTime()));
+                            tempo = true;
+                        }
                     }
-                    
+                    iStream.close();
                 } catch (SocketException | ClassNotFoundException ex) {
                     Logger.getLogger(NodeDatagramSocket.class.getName()).log(Level.SEVERE, null, ex);
                 } catch(IOException e){
                     System.out.println("IOException in UdpReceiver.receive: " + e);
                 }
             }  
+            
+            socket.close();
+            socketDelay.close();
         }
     }
 }

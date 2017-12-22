@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package overlaynetworknode;
+package node;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -12,36 +12,37 @@ import java.net.SocketException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import overlaynetworknode.NodeDatagramSocket;
 
 /**
  *
  * @author eduardo
  */
 public class ThreadToSend implements Runnable {
-    private static int port;
+    private final NodeDatagramSocket socket;
+    private Scanner scanner;
     
-    public ThreadToSend(int port) {
-        ThreadToSend.port = port;
+    public ThreadToSend(NodeDatagramSocket socket) {
+        this.socket = socket;
     }
     
     
     @Override
-    public void run(){
+    public void run() {
+        scanner = new Scanner(System.in);
         
         try {
-            NodeDatagramSocket socket = new NodeDatagramSocket(port);
-            InetAddress address = InetAddress.getByName("localhost");
-            
             while (true) {
-               // Scanner scanner = new Scanner(System.in);
-                //System.out.print("Enter your msg: ");
-                //String str = scanner.nextLine();
-                //System.out.print("To which node ?: ");
-                //int toId = scanner.nextInt();
-                //int PORT = (int) nodeDatagramSocket.ports[toId];
+                System.out.print("Enter your msg: ");
+                String str = scanner.nextLine();
+                System.out.print("To which node ?: ");
+                int toPort = scanner.nextInt() + 35555;
+                String toIp = "192.168.1.80";
+                scanner.nextLine();
+                InetAddress address = InetAddress.getByName(toIp);
                 
-                //DatagramPacket packet = new DatagramPacket(str.getBytes(), str.length(), address, PORT);
-                //socket.send(packet);
+                DatagramPacket packet = new DatagramPacket(str.getBytes(), str.length(), address, toPort);
+                socket.send(packet);
             }
             
         } catch (SocketException ex) {
