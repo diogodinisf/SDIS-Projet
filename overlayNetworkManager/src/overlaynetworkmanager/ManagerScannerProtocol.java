@@ -23,8 +23,8 @@ public class ManagerScannerProtocol {
                 "help", Arrays.asList("h")),
         CLOSE("close", "Closes the overlay network",
                 "close", Arrays.asList("disconnect", "exit", "kill")),
-        INFO("info", "Show network nodes list",
-                "info", Arrays.asList("information", "status", "network", "graph"));
+        INFO("network", "Show network nodes list",
+                "network", Arrays.asList("status", "web", "net", "graph"));
         
 
         private final String word;

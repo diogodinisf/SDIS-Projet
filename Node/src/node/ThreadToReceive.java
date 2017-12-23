@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import overlaynetworknode.Display;
 
 /**
  *
@@ -32,7 +33,7 @@ public class ThreadToReceive implements Runnable {
                 DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
                 socket.receive(packet);
                 String str = new String(packet.getData(), 0, packet.getLength());
-                System.out.println(str);      
+                Display.receive("\n" + str);      
             }
         } catch (SocketException ex) {
             Logger.getLogger(ThreadToReceive.class.getName()).log(Level.SEVERE, null, ex);

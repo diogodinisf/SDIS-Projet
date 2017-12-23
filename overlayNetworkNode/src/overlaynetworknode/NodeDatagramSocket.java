@@ -117,7 +117,7 @@ public class NodeDatagramSocket {
                         String toClose = (String)object;
                         
                          if (toClose.contentEquals("close")) {
-                        System.out.println("Mandado fechar");
+                        Display.alert("\nMandado fechar");
                         running = false;
                          }
                         
@@ -127,7 +127,7 @@ public class NodeDatagramSocket {
 
                         if (tempo == false){
                             double total_time = System.currentTimeMillis();
-                            System.out.println("porta " + port + " demorou " + (total_time - OverlayNetworkNode.getInitTime()));
+                            Display.info("\nporta " + port + " demorou " + (total_time - OverlayNetworkNode.getInitTime()));
                             tempo = true;
                         }
                     }
