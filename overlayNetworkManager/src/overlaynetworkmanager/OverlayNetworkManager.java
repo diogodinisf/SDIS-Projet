@@ -152,7 +152,7 @@ public class OverlayNetworkManager {
     
     public static void main(String[] args) throws SocketException, IOException {
         OverlayNetworkManager master = new OverlayNetworkManager();
-        Thread managerScanner = new Thread(new ManagerScanner()); //multiplicar para checkar
+        Thread managerScanner = new Thread(new ManagerScanner());
         managerScanner.start();
         master.run();        
     }

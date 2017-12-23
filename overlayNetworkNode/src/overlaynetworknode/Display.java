@@ -28,6 +28,10 @@ public class Display {
     public static boolean receive(String message) {
         return displayWithColor(message, ANSI_GREEN);
     }
+    
+    public static boolean alive(String message) {
+        return displayWithColor(message, ANSI_YELLOW);
+    }
 
     public static boolean info(String message) {
         return displayWithColor(message, ANSI_CYAN);

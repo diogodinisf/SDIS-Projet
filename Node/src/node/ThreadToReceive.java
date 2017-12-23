@@ -33,7 +33,7 @@ public class ThreadToReceive implements Runnable {
                 DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
                 socket.receive(packet);
                 String str = new String(packet.getData(), 0, packet.getLength());
-                Display.receive("\n" + str);      
+                Display.receive("Recebido de: " + packet.getSocketAddress().toString().replace("/", "") + ": " + str);
             }
         } catch (SocketException ex) {
             Logger.getLogger(ThreadToReceive.class.getName()).log(Level.SEVERE, null, ex);

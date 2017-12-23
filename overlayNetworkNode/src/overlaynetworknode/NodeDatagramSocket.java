@@ -58,6 +58,14 @@ public class NodeDatagramSocket {
         thread.start();
     }
     
+    public int getPort() {
+        return port;
+    }
+    
+    public String getMyAddress() {
+        return OverlayNetworkNode.getMyAddress();
+    }
+    
     //thread para enviar as mensagens
     public class sendData implements Runnable {
         private final DatagramPacket packet;
@@ -117,7 +125,7 @@ public class NodeDatagramSocket {
                         String toClose = (String)object;
                         
                          if (toClose.contentEquals("close")) {
-                        Display.alert("\nMandado fechar");
+                        Display.alert(OverlayNetworkNode.getMyAddress() + ":" + port + " Sockets fechados pelo Manager");
                         running = false;
                          }
                         
@@ -127,7 +135,7 @@ public class NodeDatagramSocket {
 
                         if (tempo == false){
                             double total_time = System.currentTimeMillis();
-                            Display.info("\nporta " + port + " demorou " + (total_time - OverlayNetworkNode.getInitTime()));
+                            Display.info(OverlayNetworkNode.getMyAddress() + ":" + port + " adquiriu lista de atrados em " + (total_time - OverlayNetworkNode.getInitTime()));
                             tempo = true;
                         }
                     }

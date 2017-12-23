@@ -40,9 +40,22 @@ public class OverlayNetworkNode {
     public void start() {
         port = 35555 + this.id;
         timeInit = System.currentTimeMillis();
+        hostname = getMyAddress();
+        Display.alive("(" + id + ") " + hostname + ":" + port);
         
-        System.out.println("Sou o nó da porta: " + port);
-        
+        try {
+            socketToSend = new NodeDatagramSocket(port);
+            socketToReceive = new DatagramSocket(port);
+        } catch (SocketException ex) {
+            Logger.getLogger(OverlayNetworkNode.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        joinOverlayNetwork();
+    }
+    
+    public static String getMyAddress() {
+        String address = null;
+
         // obter o hostname, credo que esta treta demora, vamos acreditar que aqui não se usa endereços do tipo 10.x.x.x
         Enumeration e;
         try {
@@ -57,7 +70,7 @@ public class OverlayNetworkNode {
                     String host = i.getHostAddress();
                     if (host.contains(".")) {
                         if ((host.split("\\."))[0].equalsIgnoreCase("192")) {
-                            hostname = host;
+                            address = host;
                         }
                     }
                 }
@@ -66,14 +79,7 @@ public class OverlayNetworkNode {
             Logger.getLogger(OverlayNetworkNode.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        try {
-            socketToSend = new NodeDatagramSocket(port);
-            socketToReceive = new DatagramSocket(port);
-        } catch (SocketException ex) {
-            Logger.getLogger(OverlayNetworkNode.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        joinOverlayNetwork();
+        return address;
     }
     
     public static void close() {
