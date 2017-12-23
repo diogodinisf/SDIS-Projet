@@ -3,28 +3,34 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package overlaynetworkmanager;
+package node;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import overlaynetworknode.Display;
+import overlaynetworknode.NodeDatagramSocket;
 
 /**
  *
  * @author diogo
  */
-public class ManagerScannerProtocol {
+public class ScannerProtocol {
+    private static NodeDatagramSocket socket;
     
-    public enum MessageType {
+     public enum MessageType {
         HELP("help", "Displays this message",
                 "help", Arrays.asList("h")),
-        CLOSE("close", "Closes the overlay network",
-                "close", Arrays.asList("disconnect", "exit", "kill")),
-        INFO("network", "Show network nodes list",
-                "network", Arrays.asList("status", "web", "net", "graph"));
+        MESSAGE("msg", "Send a message to node i", 
+                "msg i <text>", Arrays.asList("mensagem", "message", "sms")),
+        DELAY("delay", "Show delays for other nodes",
+                "delay", Arrays.asList("latency", "atrasos", "latencias"));
         
 
         private final String word;
@@ -51,8 +57,8 @@ public class ManagerScannerProtocol {
         }
     }
 
-    public static boolean protocol(String message) {
-
+    public static boolean protocol(String message, NodeDatagramSocket socket) throws UnknownHostException, IOException {
+        ScannerProtocol.socket = socket;
         List<String> words = splitMessage(message);
 
         if(words.isEmpty()) {
@@ -65,12 +71,12 @@ public class ManagerScannerProtocol {
             help();
         }
        
-        if(MessageType.INFO.getKeys().contains(word)) {
-            info();
+        if(MessageType.DELAY.getKeys().contains(word)) {
+            delay();
         }
 
-        if(MessageType.CLOSE.getKeys().contains(word)) {
-            close();
+        if(MessageType.MESSAGE.getKeys().contains(word)) {
+            sendMessage(Integer.parseInt(words.get(1)), message.substring(message.indexOf(words.get(1)) + words.get(1).length()).trim());
         }
 
         return false;
@@ -83,17 +89,24 @@ public class ManagerScannerProtocol {
         return words;
     }
 
-    private static void close() {
-        ManagerScanner.close();
-    }
-
-    private static void info() {
-        OverlayNetworkManager.printNodesList();
+    private static void delay() {
+        socket.printNodesMap();
     }
 
     private static void help() {
         for(MessageType messageType: MessageType.values()) {
             Display.help(messageType.getHelpMessage());
         }
+    }
+    
+    private static void sendMessage(int toId, String msg) throws UnknownHostException, IOException {
+        int toPort;
+        String toIp = "192.168.1.80";
+        
+        toPort = toId + 35555;
+        InetAddress address = InetAddress.getByName(toIp);
+        Display.info(msg);
+        DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, toPort);
+        socket.send(packet);
     }
 }

@@ -42,7 +42,7 @@ public class NodeDatagramSocket {
             System.out.println("(Nó " + port + ") " + (node.getKey()).toString() + " :: Delay: " + node.getValue());
         });
     }
-    
+
     public void send(DatagramPacket packet) throws IOException {
         int toPort = packet.getPort();
         double wait = 0;

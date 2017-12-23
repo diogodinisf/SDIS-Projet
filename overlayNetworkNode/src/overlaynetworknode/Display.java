@@ -33,6 +33,10 @@ public class Display {
         return displayWithColor(message, ANSI_CYAN);
     }
     
+    public static boolean help(String message) {
+        return displayWithColor("\t" + message, ANSI_PURPLE);
+    }
+    
     public static boolean alert(String message) {
         return displayWithColor(message, ANSI_RED);
     }

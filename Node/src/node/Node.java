@@ -37,8 +37,8 @@ public class Node {
     
     public static void main(String[] args) throws SocketException, IOException, InterruptedException {
         new Node().run(args[0]);
-    }   
-    
+    }
+
     public static int getId() {
         return id;
     }
