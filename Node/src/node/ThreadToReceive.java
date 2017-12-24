@@ -36,7 +36,9 @@ public class ThreadToReceive implements Runnable {
                 Display.receive("Recebido de: " + packet.getSocketAddress().toString().replace("/", "") + ": " + str);
             }
         } catch (SocketException ex) {
-            Logger.getLogger(ThreadToReceive.class.getName()).log(Level.SEVERE, null, ex);
+            // socket foi fechado, é algo normal
+            Node.closeProgram();
+            //Logger.getLogger(ThreadToReceive.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(ThreadToReceive.class.getName()).log(Level.SEVERE, null, ex);
         }   

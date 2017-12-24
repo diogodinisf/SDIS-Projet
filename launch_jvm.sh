@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in `seq 1 5`
+for i in `seq 0 5`
 do
 	java -jar "Node/dist/Node.jar" $i &
 	sleep 1

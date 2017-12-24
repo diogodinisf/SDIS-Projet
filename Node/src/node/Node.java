@@ -20,6 +20,8 @@ public class Node {
     private static final int MASTER_PORT = 6789;
     private DatagramSocket socketToReceive;
     private NodeDatagramSocket socketToSend;
+    private Thread thread_send;
+    private Thread thread_recv;
     
     public void run(String id) {
         Node.id = Integer.parseInt(id);
@@ -29,9 +31,9 @@ public class Node {
         socketToReceive = node.getSocketToReceive();
         socketToSend = node.getSocketToSend();
         
-        Thread thread_recv = new Thread(new ThreadToReceive(socketToReceive)); //multiplicar para checkar
+        thread_recv = new Thread(new ThreadToReceive(socketToReceive)); //multiplicar para checkar
         thread_recv.start();
-        Thread thread_send = new Thread(new ThreadToSend(socketToSend)); //multiplicar para checkar
+        thread_send = new Thread(new ThreadToSend(socketToSend)); //multiplicar para checkar
         thread_send.start();
     }
     
@@ -41,5 +43,9 @@ public class Node {
 
     public static int getId() {
         return id;
+    }
+    
+    public static void closeProgram() {
+        ThreadToSend.close();
     }
 }

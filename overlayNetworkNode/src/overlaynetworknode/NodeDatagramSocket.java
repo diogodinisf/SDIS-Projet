@@ -39,7 +39,11 @@ public class NodeDatagramSocket {
     
     public void printNodesMap() {
         nodeMap.entrySet().forEach((node) -> {
-            System.out.println("(Nó " + port + ") " + (node.getKey()).toString() + " :: Delay: " + node.getValue());
+            if (port == node.getKey().getPort()) {
+                Display.receive((node.getKey()).toString() + " :: Delay: " + node.getValue());
+            } else {
+                System.out.println((node.getKey()).toString() + " :: Delay: " + node.getValue());
+            }
         });
     }
 
@@ -149,6 +153,7 @@ public class NodeDatagramSocket {
             
             socket.close();
             socketDelay.close();
+            OverlayNetworkNode.close();
         }
     }
 }
