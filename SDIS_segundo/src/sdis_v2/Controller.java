@@ -14,6 +14,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Scanner;
 
 /**
  *
@@ -29,6 +30,7 @@ public class Controller {
     /*
     Faz o dijkstra guarda os valors no vetor delay.
     */
+    
     
     public static void makeDjikstra(EdgeWeightedGraph G){
         
@@ -84,7 +86,10 @@ public class Controller {
         s.joinGroup(group);
         socket = new DatagramSocket();
         G= new EdgeWeightedGraph(Nodes); 
+        
         writeFile();
+        Thread thread_recv = new Thread(new ReceiveCommands()); //multiplicar para checkar
+        thread_recv.start();
         int nodePort=0; //isto vai ser um vetor, provavelmente vai tar no ficheiro
         
         while(true){
@@ -124,5 +129,23 @@ public class Controller {
             }
         }
         
+    }
+    
+    public static class ReceiveCommands implements Runnable {
+
+        @Override
+        public void run(){
+            
+            while(true){
+                Scanner scanner = new Scanner(System.in);
+                System.out.print("Enter 'draw' to draw the graph: ");
+                String str = scanner.nextLine();
+                if(str.equals("draw")){
+                    DrawGraph.main();
+                }
+            }
+            
+           
+        }
     }
 }
