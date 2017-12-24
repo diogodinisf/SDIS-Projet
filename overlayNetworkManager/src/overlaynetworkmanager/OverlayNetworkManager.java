@@ -29,6 +29,7 @@ public class OverlayNetworkManager {
     static int Nodes = 0;
     static int Edges = 0;
     static List<Node_type> nodes = new ArrayList<>();
+    private static EdgeWeightedGraph G;
     
     // For each node calculates the shortest path to every other node. Calls sendArray() to send an array with the
     // transmission delay to each node.
@@ -96,7 +97,7 @@ public class OverlayNetworkManager {
 
     public void run() throws SocketException, IOException {
         DatagramSocket socket = new DatagramSocket (6789);
-        EdgeWeightedGraph G = new EdgeWeightedGraph(Nodes); 
+        G = new EdgeWeightedGraph(Nodes); 
         running = true;
         socket.setSoTimeout(5); // para usar com o close
         
@@ -143,6 +144,10 @@ public class OverlayNetworkManager {
         nodeMap.entrySet().forEach((node) -> {
             System.out.println((node.getKey()).toString() + " :: Delay: " + node.getValue());
         });
+    }
+    
+    public static EdgeWeightedGraph getEdgeWeightGraph() {
+        return G;
     }
     
     public static void close() {

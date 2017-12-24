@@ -23,8 +23,10 @@ public class ManagerScannerProtocol {
                 "help", Arrays.asList("h")),
         CLOSE("close", "Closes the overlay network",
                 "close", Arrays.asList("disconnect", "exit", "kill")),
+        DRAW("draw", "Draw the graph in a separate window",
+                "draw", Arrays.asList("graph", "desenhar", "grafo", "esquema", "scheme")),
         INFO("network", "Show network nodes list",
-                "network", Arrays.asList("status", "web", "net", "graph"));
+                "network", Arrays.asList("status", "web", "net"));
         
 
         private final String word;
@@ -69,6 +71,11 @@ public class ManagerScannerProtocol {
             info();
         }
 
+        
+        if(MessageType.DRAW.getKeys().contains(word)) {
+            draw();
+        }
+        
         if(MessageType.CLOSE.getKeys().contains(word)) {
             close();
         }
@@ -89,6 +96,10 @@ public class ManagerScannerProtocol {
 
     private static void info() {
         OverlayNetworkManager.printNodesList();
+    }
+    
+    private static void draw() {
+        DrawGraph.main();
     }
 
     private static void help() {
