@@ -6,12 +6,12 @@ import javax.swing.SwingUtilities;
 import org.jgrapht.ListenableGraph;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.ListenableDirectedWeightedGraph;
 import org.jgrapht.graph.ListenableUndirectedWeightedGraph;
 import com.mxgraph.layout.mxCircleLayout;
 import com.mxgraph.layout.mxIGraphLayout;
 import com.mxgraph.swing.mxGraphComponent;
 import edu.princeton.cs.algs4.Edge;
+import overlaynetworknode.Display;
 
 /**
  *
@@ -24,12 +24,10 @@ public class DrawGraph {
 
         ListenableGraph<String, MyEdge> g = buildGraph();
         JGraphXAdapter<String, MyEdge> graphAdapter = new JGraphXAdapter<String, MyEdge>(g);
-
         mxIGraphLayout layout = new mxCircleLayout(graphAdapter);
         layout.execute(graphAdapter.getDefaultParent());
-
+        
         frame.add(new mxGraphComponent(graphAdapter));
-
         frame.pack();
         frame.setLocationByPlatform(true);
         frame.setVisible(true);
@@ -47,14 +45,15 @@ public class DrawGraph {
     public static class MyEdge extends DefaultWeightedEdge {
         @Override
         public String toString() {
-            return String.valueOf(getWeight());
+            //return String.valueOf(getWeight());
+            return String.valueOf("");
         }
     }
 
     public static ListenableGraph<String, MyEdge> buildGraph() {
         ListenableUndirectedWeightedGraph<String, MyEdge> g = new ListenableUndirectedWeightedGraph<>(MyEdge.class);
         String edges[][] = new String[OverlayNetworkManager.getEdgeWeightGraph().E()][2] ;
-        System.out.println("Edges: "+ OverlayNetworkManager.getEdgeWeightGraph().E());
+        System.out.println("Edges: " + OverlayNetworkManager.getEdgeWeightGraph().E());
         int edgeCount = 0;
         
         for (int i = 0 ; i < OverlayNetworkManager.getEdgeWeightGraph().V(); i++) {
@@ -72,9 +71,10 @@ public class DrawGraph {
                     continue;
                 }
                 
-                System.out.println(e);
+                Display.info(e.toString());
+                
                 String str = v1 + " " + v2;
-                String str2 = v2+ " " + v1;
+                String str2 = v2 + " " + v1;
                 for (int j = 0; j < edgeCount; j++) {
                     //System.out.println("stored "+edges[j][0]);
                     if (edges[j][0].equals(str) || edges[j][0].equals(str2)) {
@@ -92,12 +92,12 @@ public class DrawGraph {
                 }
                 
                 if (exist) {
-                    g.removeEdge(v1,v2);
-                    MyEdge edg = g.addEdge(v1,v2);
+                    g.removeEdge(v1, v2);
+                    MyEdge edg = g.addEdge(v1, v2);
                     g.setEdgeWeight(edg,e.weight()); 
                     //System.out.println("YO");
                 } else {
-                    MyEdge edg = g.addEdge(v1,v2);
+                    MyEdge edg = g.addEdge(v1, v2);
                     g.setEdgeWeight(edg,e.weight()); 
                     edges[edgeCount][0] = str;
                     //System.out.println("saved "+edges[edgeCount][0]);
