@@ -34,7 +34,7 @@
  *
  ******************************************************************************/
 
-package sdis;
+package overlaynetworkmanager;
 
 import edu.princeton.cs.algs4.Edge;
 import edu.princeton.cs.algs4.In;

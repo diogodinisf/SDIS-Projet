@@ -11,32 +11,36 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import overlaynetworknode.Display;
 
 /**
  *
  * @author eduardo
  */
-public class threadToReceive implements Runnable {
-
-    static DatagramSocket socket;
+public class ThreadToReceive implements Runnable {
+    private final DatagramSocket socket;
+    
+    public ThreadToReceive(DatagramSocket socket) {
+        this.socket = socket;
+    }
     
     @Override
-    public void run(){
+    public void run() {
         try {
-            socket = new DatagramSocket(Node.getPort());
-            while(true){
-                byte[] receiveData=new byte[ 64*1024 ];
+            
+            while (true) {
+                byte[] receiveData = new byte[64 * 1024];
                 DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
                 socket.receive(packet);
                 String str = new String(packet.getData(), 0, packet.getLength());
-               // System.out.println(str);      
+                Display.receive("Recebido de: " + packet.getSocketAddress().toString().replace("/", "") + ": " + str);
             }
         } catch (SocketException ex) {
-            Logger.getLogger(threadToReceive.class.getName()).log(Level.SEVERE, null, ex);
+            // socket foi fechado, é algo normal
+            Node.closeProgram();
+            //Logger.getLogger(ThreadToReceive.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(threadToReceive.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+            Logger.getLogger(ThreadToReceive.class.getName()).log(Level.SEVERE, null, ex);
+        }   
     }
-    
 }

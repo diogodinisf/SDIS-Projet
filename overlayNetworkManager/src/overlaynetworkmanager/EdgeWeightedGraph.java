@@ -21,7 +21,7 @@
  *  7: 2-7 0.34000  1-7 0.19000  0-7 0.16000  5-7 0.28000  4-7 0.37000
  *
  ******************************************************************************/
-package sdis;
+package overlaynetworkmanager;
 
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.Edge;

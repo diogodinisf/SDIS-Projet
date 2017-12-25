@@ -1,6 +1,16 @@
 #!/bin/bash
 
-for i in `seq 1 150`
+if [ $1 ] 
+then
+	num=$1
+else
+	num=10
+fi
+
+for i in `seq 0 $(($num - 2))`
 do
-	java -jar "/home/eduardo/SDIS-Projet/Node/dist/Node.jar" SDIS-Projet/Node/src/node/Node.java $i &
+	java -jar "Node/dist/Node.jar" $i &
+	sleep 0.2
 done
+
+java -jar "Node/dist/Node.jar" $((i + 1))
