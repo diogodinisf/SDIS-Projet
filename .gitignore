@@ -2,14 +2,14 @@
 
 Node/build/
 Node/dist/
-Node/nbproject/private
+Node/nbproject/private/
+
+OverlayNetworkNode/nbproject/private/
+OverlayNetworkNode/build/
+OverlayNetworkNode/dist/
+
+OverlayNetworkManager/nbproject/private/
+OverlayNetworkManager/dist/
+OverlayNetworkManager/build/
 
 *.directory
-
-overlayNetworkNode/nbproject/private/
-overlayNetworkNode/dist/
-overlayNetworkNode/build/
-
-overlayNetworkManager/nbproject/private/
-overlayNetworkManager/dist/
-overlayNetworkManager/build/
