@@ -3,20 +3,27 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package overlaynetworkmanager;
+package controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import overlaynetworknode.Display;
+import nodedatagramsocket.utils.Display;
 
 /**
  *
  * @author diogo
  */
 public class ManagerScannerProtocol {
+    private final ManagerScanner father;
+    private final Controller controller;
+    
+    public ManagerScannerProtocol(ManagerScanner father) {
+        this.father = father;
+        this.controller = father.father;
+    }
     
     public enum MessageType {
         HELP("help", "Displays this message",
@@ -25,6 +32,8 @@ public class ManagerScannerProtocol {
                 "close", Arrays.asList("disconnect", "exit", "kill")),
         DRAW("draw", "Draw the graph in a separate window",
                 "draw", Arrays.asList("graph", "desenhar", "grafo", "esquema", "scheme")),
+        DJIKSTRA("djikstra", "Show nodes connections with delays",
+                "djikstra", Arrays.asList()),
         INFO("network", "Show network nodes list",
                 "network", Arrays.asList("status", "web", "net"));
         
@@ -53,12 +62,12 @@ public class ManagerScannerProtocol {
         }
     }
 
-    public static boolean protocol(String message) {
+    public void protocol(String message) {
 
         List<String> words = splitMessage(message);
 
         if(words.isEmpty()) {
-            return true;
+            return;
         }
 
         String word = words.get(0).toLowerCase();
@@ -71,6 +80,9 @@ public class ManagerScannerProtocol {
             info();
         }
 
+        if(MessageType.DJIKSTRA.getKeys().contains(word)) {
+            djikstra();
+        }
         
         if(MessageType.DRAW.getKeys().contains(word)) {
             draw();
@@ -79,8 +91,6 @@ public class ManagerScannerProtocol {
         if(MessageType.CLOSE.getKeys().contains(word)) {
             close();
         }
-
-        return false;
     }
 
     private static List<String> splitMessage(String message) {
@@ -90,16 +100,20 @@ public class ManagerScannerProtocol {
         return words;
     }
 
-    private static void close() {
-        ManagerScanner.close();
+    private void close() {
+        father.close();
     }
 
-    private static void info() {
-        OverlayNetworkManager.printNodesList();
+    private void info() {
+        controller.printNodesList();
     }
     
-    private static void draw() {
-        DrawGraph.main();
+    private void djikstra() {
+        father.father.showDjikstra();
+    }
+    
+    private void draw() {
+        new DrawGraph(controller).run();
     }
 
     private static void help() {

@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package overlaynetworkmanager;
+package controller;
 
 
 //import edu.princeton.cs.algs4.DijkstraUndirectedSP;
-import overlaynetworknode.Node_type;
+import nodedatagramsocket.utils.Node_type;
 import edu.princeton.cs.algs4.Edge;
+import edu.princeton.cs.algs4.StdOut;
 
 //import edu.princeton.cs.algs4.EdgeWeightedGraph;
 import java.io.ByteArrayOutputStream;
@@ -19,17 +20,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Manager da rede. Multicast group no 228.5.6.7:6789. Nós ao serem criados têm de avisar o multicast group da porta onde estao a ouvir.
  * @author eduardo
  */
-public class OverlayNetworkManager {
-    private static boolean running;
-    static int Nodes = 0;
-    static int Edges = 0;
-    static List<Node_type> nodes = new ArrayList<>();
-    private static EdgeWeightedGraph G;
+public class Controller {
+    private static final int MASTER_PORT = 6789;
+    private final List<Node_type> nodes = new ArrayList<>();
+    
+    private boolean running;
+    private int Nodes = 0;
+    private EdgeWeightedGraph G;
     
     // For each node calculates the shortest path to every other node. Calls sendArray() to send an array with the
     // transmission delay to each node.
@@ -51,29 +54,52 @@ public class OverlayNetworkManager {
                 }
             }
             
-            //printNodesMap(nodeMap);
             sendOverlayNetwork(node.getIp(), node.getPort(), nodeMap);
         }
     }
     
-    // pede a todos os nós para fecharem - porreiro para debugging
-    public static void sendClose() {
-        nodes.forEach((node) -> {
-            try {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
-                ObjectOutputStream oos = new ObjectOutputStream(baos);
-                oos.writeObject("close");
-                oos.close();
-                byte[] obj= baos.toByteArray();
-                baos.close();
-                DatagramSocket socket= new DatagramSocket();
-                InetAddress address = InetAddress.getByName(node.getIp());
-                DatagramPacket packet = new DatagramPacket(obj, obj.length, address, node.getPort() + 5000);
-                socket.send(packet);
-            } catch(Exception e) {
-                System.out.println("Erro " + e);
+    public void showDjikstra() {
+        for (int s = 0; s <  G.V(); s++) {
+            DijkstraUndirectedSP sp = new DijkstraUndirectedSP(G, s);
+            
+            for (int t = 0; t < G.V(); t++) {
+                if (sp.hasPathTo(t)) {
+                    StdOut.printf("%d to %d (%.2f)", s, t, sp.distTo(t));
+                    
+                    for (Edge e : sp.pathTo(t)) {
+                        StdOut.print(" " + e);
+                    }
+                    StdOut.println();
+                } else {
+                    StdOut.printf("%d to %d " + "\u001B[31m" + "no path" + "\u001B[0m" + "\n", s, t);
+                }
             }
-        });
+        }
+    }
+    
+    // pede a todos os nós para fecharem - porreiro para debugging
+    public void sendClose() {
+        String msg = "close";
+        
+        try {    
+            DatagramSocket socket = new DatagramSocket();
+            
+            nodes.forEach((node) -> {
+                try {
+                    InetAddress address = InetAddress.getByName(node.getIp());
+                    DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, node.getPort() + 5000);
+                    socket.send(packet);
+                } catch (UnknownHostException ex) {
+                    Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            
+            socket.close();
+        } catch (SocketException ex) {
+            Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     //Sends to each node, via UDP, and array of doubles with the weights to every other node.
@@ -86,20 +112,24 @@ public class OverlayNetworkManager {
             oos.close();
             byte[] obj= baos.toByteArray();
             baos.close();
-            DatagramSocket socket= new DatagramSocket();
+            DatagramSocket socket = new DatagramSocket();
             InetAddress address = InetAddress.getByName(ip);
             DatagramPacket packet = new DatagramPacket(obj, obj.length, address, port + 5000);
             socket.send(packet);
+            socket.close();
         } catch(Exception e) {
             System.out.println("Erro " + e);
         } 
     }
 
     public void run() throws SocketException, IOException {
-        DatagramSocket socket = new DatagramSocket (6789);
+        DatagramSocket socket = new DatagramSocket (MASTER_PORT);
         G = new EdgeWeightedGraph(Nodes); 
         running = true;
         socket.setSoTimeout(5); // para usar com o close
+        
+        Thread managerScanner = new Thread(new ManagerScanner(this));
+        managerScanner.start();
         
         while (running) {
             byte[] receiveData = new byte[1024];
@@ -134,7 +164,7 @@ public class OverlayNetworkManager {
         }
     }
         
-    public static void printNodesList() {
+    public void printNodesList() {
         nodes.forEach((Node_type node) -> {
             System.out.println(node.toString());
         });
@@ -146,19 +176,17 @@ public class OverlayNetworkManager {
         });
     }
     
-    public static EdgeWeightedGraph getEdgeWeightGraph() {
+    public EdgeWeightedGraph getEdgeWeightGraph() {
         return G;
     }
     
-    public static void close() {
+    public void close() {
         running = false;
-        OverlayNetworkManager.sendClose();
+        sendClose();
     }
     
     public static void main(String[] args) throws SocketException, IOException {
-        OverlayNetworkManager master = new OverlayNetworkManager();
-        Thread managerScanner = new Thread(new ManagerScanner());
-        managerScanner.start();
+        Controller master = new Controller();
         master.run();        
     }
 }

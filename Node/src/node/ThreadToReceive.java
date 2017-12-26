@@ -7,21 +7,23 @@ package node;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import overlaynetworknode.Display;
+import nodedatagramsocket.utils.Display;
+import nodedatagramsocket.socket.NodeDatagramSocket;
 
 /**
  *
  * @author eduardo
  */
 public class ThreadToReceive implements Runnable {
-    private final DatagramSocket socket;
+    private final NodeDatagramSocket socket;
+    private final Node father;
     
-    public ThreadToReceive(DatagramSocket socket) {
+    public ThreadToReceive(NodeDatagramSocket socket, Node father) {
         this.socket = socket;
+        this.father = father;
     }
     
     @Override
@@ -37,7 +39,7 @@ public class ThreadToReceive implements Runnable {
             }
         } catch (SocketException ex) {
             // socket foi fechado, é algo normal
-            Node.closeProgram();
+            father.closeProgram();
             //Logger.getLogger(ThreadToReceive.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(ThreadToReceive.class.getName()).log(Level.SEVERE, null, ex);

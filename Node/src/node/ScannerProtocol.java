@@ -14,16 +14,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import overlaynetworknode.Display;
-import overlaynetworknode.NodeDatagramSocket;
-import overlaynetworknode.OverlayNetworkNode;
+import nodedatagramsocket.utils.Display;
+import nodedatagramsocket.socket.NodeDatagramSocket;
 
 /**
  *
  * @author diogo
  */
 public class ScannerProtocol {
-    private static NodeDatagramSocket socket;
+    private NodeDatagramSocket socket;
     
      public enum MessageType {
         HELP("help", "Displays this message",
@@ -60,8 +59,8 @@ public class ScannerProtocol {
         }
     }
 
-    public static boolean protocol(String message, NodeDatagramSocket socket) throws UnknownHostException, IOException {
-        ScannerProtocol.socket = socket;
+    public boolean protocol(String message, NodeDatagramSocket socket) throws UnknownHostException, IOException {
+        this.socket = socket;
         List<String> words = splitMessage(message);
 
         if(words.isEmpty()) {
@@ -96,7 +95,7 @@ public class ScannerProtocol {
         return words;
     }
 
-    private static void delay() {
+    private void delay() {
         socket.printNodesMap();
     }
 
@@ -106,11 +105,11 @@ public class ScannerProtocol {
         }
     }
     
-    private static void whoami() {
-        Display.info(OverlayNetworkNode.getMyAddress() + ":" + socket.getPort());
+    private void whoami() {
+        Display.info(NodeDatagramSocket.getMyAddress() + ":" + socket.getPort());
     }
     
-    private static void sendMessage(int toId, String msg) throws UnknownHostException, IOException {
+    private void sendMessage(int toId, String msg) throws UnknownHostException, IOException {
         int toPort;
         String toIp = "192.168.1.80";
         
