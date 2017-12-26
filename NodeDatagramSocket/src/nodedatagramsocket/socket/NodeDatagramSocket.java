@@ -69,8 +69,8 @@ public class NodeDatagramSocket {
         
         socket = new DatagramSocket();
         socketDelay = new DatagramSocket();
-        this.port = socket.getPort();
-        this.delayPort = socketDelay.getPort();
+        this.port = socket.getLocalPort();
+        this.delayPort = socketDelay.getLocalPort();
         
         Thread threadDelay = new Thread(new getOverlayNetworkFromControler(socketDelay));
         threadDelay.start();
