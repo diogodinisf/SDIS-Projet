@@ -14,7 +14,7 @@ import nodedatagramsocket.socket.NodeDatagramSocket;
  * @author eduardo
  */
 public class Node {
-    private static final String MASTER_HOSTNAME = "localhost";
+    private static final String MASTER_HOSTNAME = "192.168.1.80";
     private static final int MASTER_PORT = 6789;
     
     private int port;
