@@ -123,7 +123,7 @@ public class Controller {
     }
 
     public void run() throws SocketException, IOException {
-        DatagramSocket socket = new DatagramSocket (MASTER_PORT);
+        DatagramSocket socket = new DatagramSocket(MASTER_PORT);
         G = new EdgeWeightedGraph(Nodes); 
         running = true;
         socket.setSoTimeout(5); // para usar com o close
@@ -137,11 +137,11 @@ public class Controller {
             
             try {
                 socket.receive(packet);
-            
-            
+                
                 String str = new String(packet.getData(), 0, packet.getLength());
                 String[] split = str.split("_");
-
+                System.out.println(str);
+                System.out.println(packet.getSocketAddress());
                 Node_type node;
                 node = new Node_type(Nodes, split[0], Integer.parseInt(split[1]));
                 nodes.add(node);

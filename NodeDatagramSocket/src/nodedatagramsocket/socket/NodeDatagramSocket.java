@@ -38,10 +38,12 @@ public class NodeDatagramSocket {
     private final DatagramSocket socket;
     private final DatagramSocket socketDelay;
     private final int port;
+    private final int delayPort;
     private Map<Node_type, Double> nodeMap = Collections.synchronizedMap(new HashMap<>());
 
     public NodeDatagramSocket(int port, String masterHostname, int masterPort) throws SocketException {
         this.port = port;
+        this.delayPort = port + 5000;
         this.masterHostname = masterHostname;
         this.masterPort = masterPort;
         
@@ -51,7 +53,7 @@ public class NodeDatagramSocket {
         Display.alive("(" + id + ") " + hostname + ":" + port);
         
         socket = new DatagramSocket(this.port);
-        socketDelay = new DatagramSocket(this.port + 5000);
+        socketDelay = new DatagramSocket(this.delayPort);
         Thread threadDelay = new Thread(new getOverlayNetworkFromControler(socketDelay));
         threadDelay.start();
         
@@ -70,6 +72,8 @@ public class NodeDatagramSocket {
         Display.alive("(" + id + ") " + hostname + ":" + port);
         
         socketDelay = new DatagramSocket(this.port + 5000);
+        this.delayPort = socketDelay.getPort();
+        
         Thread threadDelay = new Thread(new getOverlayNetworkFromControler(socketDelay));
         threadDelay.start();
         
@@ -97,7 +101,7 @@ public class NodeDatagramSocket {
     
     private void joinOverlayNetwork() {
         try {
-            String str = hostname + "_" + port;
+            String str = hostname + "_" + port + "_" + delayPort;
             DatagramPacket packet = new DatagramPacket(str.getBytes(), str.length(), InetAddress.getByName(masterHostname), masterPort);
             socket.send(packet);
         } catch (UnknownHostException ex) {
