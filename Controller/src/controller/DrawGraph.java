@@ -1,4 +1,4 @@
-package overlaynetworkmanager;
+package controller;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -11,14 +11,20 @@ import com.mxgraph.layout.mxCircleLayout;
 import com.mxgraph.layout.mxIGraphLayout;
 import com.mxgraph.swing.mxGraphComponent;
 import edu.princeton.cs.algs4.Edge;
-import overlaynetworknode.Display;
+import nodedatagramsocket.utils.Display;
 
 /**
  *
  * @author eduardo
  */
 public class DrawGraph {
-    private static void createAndShowGui() {
+    Controller controller;
+    
+    public DrawGraph(Controller controller) {
+        this.controller = controller;
+    }
+    
+    private void createAndShowGui() {
         JFrame frame = new JFrame("DemoGraph");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -33,7 +39,7 @@ public class DrawGraph {
         frame.setVisible(true);
     }
 
-    public static void main() {
+    public void run() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -50,18 +56,18 @@ public class DrawGraph {
         }
     }
 
-    public static ListenableGraph<String, MyEdge> buildGraph() {
+    public ListenableGraph<String, MyEdge> buildGraph() {
         ListenableUndirectedWeightedGraph<String, MyEdge> g = new ListenableUndirectedWeightedGraph<>(MyEdge.class);
-        String edges[][] = new String[OverlayNetworkManager.getEdgeWeightGraph().E()][2] ;
-        System.out.println("Edges: " + OverlayNetworkManager.getEdgeWeightGraph().E());
+        String edges[][] = new String[controller.getEdgeWeightGraph().E()][2] ;
+        System.out.println("Edges: " + controller.getEdgeWeightGraph().E());
         int edgeCount = 0;
         
-        for (int i = 0 ; i < OverlayNetworkManager.getEdgeWeightGraph().V(); i++) {
+        for (int i = 0 ; i < controller.getEdgeWeightGraph().V(); i++) {
             g.addVertex(Integer.toString(i));
         }
         
-        for (int i =0 ; i < OverlayNetworkManager.getEdgeWeightGraph().V(); i++) {
-            for (Edge e: OverlayNetworkManager.getEdgeWeightGraph().adj(i)) {
+        for (int i =0 ; i < controller.getEdgeWeightGraph().V(); i++) {
+            for (Edge e: controller.getEdgeWeightGraph().adj(i)) {
                 boolean exist = false;
                 boolean pass = false;
                 String v1 = Integer.toString(e.either());

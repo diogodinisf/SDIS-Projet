@@ -4,12 +4,12 @@ Node/build/
 Node/dist/
 Node/nbproject/private/
 
-OverlayNetworkNode/nbproject/private/
-OverlayNetworkNode/build/
-OverlayNetworkNode/dist/
+NodeDatagramSocket/nbproject/private/
+NodeDatagramSocket/dist/
+NodeDatagramSocket/build/
 
-OverlayNetworkManager/nbproject/private/
-OverlayNetworkManager/dist/
-OverlayNetworkManager/build/
+Controller/nbproject/private/
+Controller/dist/
+Controller/build/
 
 *.directory

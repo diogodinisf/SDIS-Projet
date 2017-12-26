@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -jar "overlayNetworkManager/dist/overlayNetworkManager.jar"
+java -jar "Controller/dist/Controller.jar"

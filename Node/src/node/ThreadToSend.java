@@ -11,8 +11,8 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import overlaynetworknode.Display;
-import overlaynetworknode.NodeDatagramSocket;
+import nodedatagramsocket.utils.Display;
+import nodedatagramsocket.socket.NodeDatagramSocket;
 
 /**
  *
@@ -21,7 +21,8 @@ import overlaynetworknode.NodeDatagramSocket;
 public class ThreadToSend implements Runnable {
     private final NodeDatagramSocket socket;
     private Scanner scanner;
-    private static boolean running;
+    private boolean running;
+    private ScannerProtocol scannerProtocol;
     
     public ThreadToSend(NodeDatagramSocket socket) {
         this.socket = socket;
@@ -29,14 +30,17 @@ public class ThreadToSend implements Runnable {
     
     @Override
     public void run() {
-        scanner = new Scanner(System.in);
         running = true;
+        scanner = new Scanner(System.in);
+        scannerProtocol = new ScannerProtocol();
         
         try {
             while (running) {
                 String message = scanner.nextLine();
-                ScannerProtocol.protocol(message, socket);
+                scannerProtocol.protocol(message, socket);
             }
+            
+            scanner.close();
         } catch (NoSuchElementException e) {
             Display.alert(socket.getMyAddress() + ":" + socket.getPort() + " Perdeu o Scanner Input devido ao terminal partilhado");
         } catch (SocketException ex) {
@@ -46,7 +50,7 @@ public class ThreadToSend implements Runnable {
         }
     }
     
-    public static void close() {
+    public void close() {
         running = false;
     }
 }
