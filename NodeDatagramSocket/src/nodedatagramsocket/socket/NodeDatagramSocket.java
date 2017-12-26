@@ -176,7 +176,8 @@ public class NodeDatagramSocket {
 
                         if (tempo == false) {
                             double total_time = System.currentTimeMillis();
-                            Display.info(getMyAddress() + ":" + port + " adquiriu lista de atrados em " + (total_time - getInitTime()));
+                            Display.info(getMyAddress() + ":" + port + " adquiriu lista de atrados em " + (total_time - getInitTime()) + "ms");
+                            Display.receive(getMyAddress() + ":" + port + " recebeu o ID: " + getMyId());
                             tempo = true;
                         }
 
@@ -198,12 +199,50 @@ public class NodeDatagramSocket {
         return port;
     }
     
+    public int getMyId() {
+        int id = -1;
+        
+        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+            if (port == node.getKey().getPort()) {
+                if (node.getKey().getIp().equalsIgnoreCase(hostname)) {
+                    id = node.getKey().getId();
+                }
+            } 
+        }
+        
+        return id;
+    }
+    
     public DatagramSocket getSocket() {
         return socket;
     }
     
     public double getInitTime() {
         return timeInit;
+    }
+    
+    public int getPortById(int id) {
+        int port = 0;
+        
+        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+            if (id == node.getKey().getId()) {
+                port = node.getKey().getPort();
+            } 
+        }
+        
+        return port;
+    }
+    
+    public String getIpById(int id) {
+        String address = null;
+        
+        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+            if (id == node.getKey().getId()) {
+                address = node.getKey().getIp();
+            } 
+        }
+        
+        return address;
     }
     
     public static String getMyAddress() {

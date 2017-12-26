@@ -82,7 +82,7 @@ public class ScannerProtocol {
         }
 
         if(MessageType.MESSAGE.getKeys().contains(word)) {
-            sendMessage(words.get(1), Integer.parseInt(words.get(2)), message.substring(message.indexOf(words.get(2)) + words.get(2).length()).trim());
+            sendMessage(Integer.parseInt(words.get(1)), message.substring(message.indexOf(words.get(1)) + words.get(1).length()).trim());
         }
 
         return false;
@@ -109,7 +109,10 @@ public class ScannerProtocol {
         Display.info(NodeDatagramSocket.getMyAddress() + ":" + socket.getPort());
     }
     
-    private void sendMessage(String toIp, int toPort, String msg) throws UnknownHostException, IOException {
+    private void sendMessage(int toId, String msg) throws UnknownHostException, IOException {
+        String toIp = socket.getIpById(toId);
+        int toPort = socket.getPortById(toId);
+        
         InetAddress address = InetAddress.getByName(toIp);
         Display.info("Enviado: " + msg);
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, toPort);
