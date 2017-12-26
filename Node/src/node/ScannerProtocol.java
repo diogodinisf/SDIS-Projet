@@ -28,7 +28,7 @@ public class ScannerProtocol {
         HELP("help", "Displays this message",
                 "help", Arrays.asList("h")),
         MESSAGE("msg", "Send a message to node i", 
-                "msg i <text>", Arrays.asList("mensagem", "message", "sms")),
+                "msg <address> <port> <text>", Arrays.asList("mensagem", "message", "sms")),
         WHOAMI("whoami", "Return the IP:PORT of node", 
                 "whoami", Arrays.asList("who", "quem", "info", "information")),
         DELAY("delay", "Show delays for other nodes",
@@ -82,7 +82,7 @@ public class ScannerProtocol {
         }
 
         if(MessageType.MESSAGE.getKeys().contains(word)) {
-            sendMessage(Integer.parseInt(words.get(1)), message.substring(message.indexOf(words.get(1)) + words.get(1).length()).trim());
+            sendMessage(words.get(1), Integer.parseInt(words.get(2)), message.substring(message.indexOf(words.get(2)) + words.get(2).length()).trim());
         }
 
         return false;
@@ -109,11 +109,7 @@ public class ScannerProtocol {
         Display.info(NodeDatagramSocket.getMyAddress() + ":" + socket.getPort());
     }
     
-    private void sendMessage(int toId, String msg) throws UnknownHostException, IOException {
-        int toPort;
-        String toIp = "192.168.1.80";
-        
-        toPort = toId + 35555;
+    private void sendMessage(String toIp, int toPort, String msg) throws UnknownHostException, IOException {
         InetAddress address = InetAddress.getByName(toIp);
         Display.info("Enviado: " + msg);
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, toPort);
