@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  * @author eduardo
  */
 public class NodeDatagramSocket {
-    private int id;
+    private int myId = -1;
     private boolean running;
     
     private final int masterPort;
@@ -158,7 +158,7 @@ public class NodeDatagramSocket {
                     String toClose = new String(packet.getData(), 0, packet.getLength());
                     
                     if (toClose.contentEquals("close")) {
-                        Display.alert(getMyAddress() + ":" + port + " Sockets fechados pelo Manager");
+                        Display.alert("(" + getId() + ")" + " Sockets fechados pelo Manager");
                         running = false;
                     } else {
                         receivedBytes = packet.getLength();
@@ -176,8 +176,9 @@ public class NodeDatagramSocket {
 
                         if (tempo == false) {
                             double total_time = System.currentTimeMillis();
-                            Display.info(getMyAddress() + ":" + port + " adquiriu lista de atrados em " + (total_time - getInitTime()) + "ms");
-                            Display.receive(getMyAddress() + ":" + port + " recebeu o ID: " + getMyId());
+                            getMyId();
+                            Display.receive(getMyAddress() + ":" + port + " recebeu o ID: " + getId());
+                            Display.info("(" + getId() + ")" + " adquiriu lista de atrados em " + (total_time - getInitTime()) + "ms");
                             tempo = true;
                         }
 
@@ -199,12 +200,28 @@ public class NodeDatagramSocket {
         return port;
     }
     
-    public int getMyId() {
-        int id = -1;
-        
+    private void getMyId() {
         for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
             if (port == node.getKey().getPort()) {
                 if (node.getKey().getIp().equalsIgnoreCase(hostname)) {
+                    myId = node.getKey().getId();
+                }
+            } 
+        }
+    }
+    
+    public int getId() {
+        return myId;
+    }
+    
+    
+    public int getIdByAddress(String address) {
+        int id = -1;
+        String[] split = address.split(":");
+        
+        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+            if (Integer.parseInt(split[1]) == node.getKey().getPort()) {
+                if (node.getKey().getIp().equalsIgnoreCase(split[0])) {
                     id = node.getKey().getId();
                 }
             } 

@@ -35,7 +35,8 @@ public class ThreadToReceive implements Runnable {
                 DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
                 socket.receive(packet);
                 String str = new String(packet.getData(), 0, packet.getLength());
-                Display.receive("Recebido de: " + packet.getSocketAddress().toString().replace("/", "") + ": " + str);
+                int id = socket.getIdByAddress(packet.getSocketAddress().toString().replace("/", ""));
+                Display.receive("Recebido de " + id + ": " + str);
             }
         } catch (SocketException ex) {
             // socket foi fechado, é algo normal
