@@ -7,7 +7,6 @@ package controller;
 
 
 //import edu.princeton.cs.algs4.DijkstraUndirectedSP;
-import nodedatagramsocket.utils.Node_type;
 import edu.princeton.cs.algs4.Edge;
 import edu.princeton.cs.algs4.StdOut;
 
@@ -22,13 +21,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import nodedatagramsocket.utils.NodeType;
 
 /**
  * @author eduardo
  */
 public class Controller {
     private static final int MASTER_PORT = 6789;
-    private final List<Node_type> nodes = new ArrayList<>();
+    private final List<NodeType> nodes = new ArrayList<>();
     
     private boolean running;
     private int Nodes = 0;
@@ -40,13 +40,13 @@ public class Controller {
     public void makeDjikstra(EdgeWeightedGraph G) {
         int s, t;
         
-        for (Node_type node : nodes) {
-            Map<Node_type, Double> nodeMap = new HashMap<>();
+        for (NodeType node : nodes) {
+            Map<NodeType, Double> nodeMap = new HashMap<>();
             
             s = node.getId();
             DijkstraUndirectedSP sp = new DijkstraUndirectedSP(G, s);
             
-            for (Node_type otherNode : nodes) {
+            for (NodeType otherNode : nodes) {
                 t = otherNode.getId();
                 
                  if (sp.hasPathTo(t)) {
@@ -54,7 +54,7 @@ public class Controller {
                 }
             }
             
-            sendOverlayNetwork(node.getIp(), node.getPort(), nodeMap);
+            sendOverlayNetwork(node.getIp(), node.getDelayPort(), nodeMap);
         }
     }
     
@@ -87,7 +87,7 @@ public class Controller {
             nodes.forEach((node) -> {
                 try {
                     InetAddress address = InetAddress.getByName(node.getIp());
-                    DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, node.getPort() + 5000);
+                    DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, node.getDelayPort());
                     socket.send(packet);
                 } catch (UnknownHostException ex) {
                     Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
@@ -114,7 +114,7 @@ public class Controller {
             baos.close();
             DatagramSocket socket = new DatagramSocket();
             InetAddress address = InetAddress.getByName(ip);
-            DatagramPacket packet = new DatagramPacket(obj, obj.length, address, port + 5000);
+            DatagramPacket packet = new DatagramPacket(obj, obj.length, address, port);
             socket.send(packet);
             socket.close();
         } catch(Exception e) {
@@ -123,41 +123,41 @@ public class Controller {
     }
 
     public void run() throws SocketException, IOException {
-        DatagramSocket socket = new DatagramSocket (MASTER_PORT);
+        DatagramSocket socket = new DatagramSocket(MASTER_PORT);
         G = new EdgeWeightedGraph(Nodes); 
         running = true;
         socket.setSoTimeout(5); // para usar com o close
         
         Thread managerScanner = new Thread(new ManagerScanner(this));
-        managerScanner.start();
-        
+        managerScanner.start();   
+     
         while (running) {
             byte[] receiveData = new byte[1024];
             DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
             
             try {
                 socket.receive(packet);
-            
-            
+                
                 String str = new String(packet.getData(), 0, packet.getLength());
                 String[] split = str.split("_");
+                
+                if (split[0].equalsIgnoreCase("Hello")) {
+                    NodeType node = new NodeType(Nodes, packet.getAddress().getHostAddress().replace("/", ""), packet.getPort(), Integer.parseInt(split[1]));
+                    nodes.add(node);
 
-                Node_type node;
-                node = new Node_type(Nodes, split[0], Integer.parseInt(split[1]));
-                nodes.add(node);
+                    Nodes = Nodes + 1;
+                    if (Nodes == 1) {
+                        G = new EdgeWeightedGraph(Nodes); 
+                    } else {
+                        G.addNode();
+                        int vertice1 = (int)(Math.random() * (Nodes - 1));
+                        int vertice2 = Nodes - 1 ;
 
-                Nodes = Nodes + 1;
-                if (Nodes == 1) {
-                    G = new EdgeWeightedGraph(Nodes); 
-                } else {
-                    G.addNode();
-                    int vertice1 = (int)(Math.random() * (Nodes - 1));
-                    int vertice2 = Nodes - 1 ;
-
-                    Edge E = new Edge(vertice1, vertice2, Math.random());
-                    G.addEdge(E);
-                    makeDjikstra(G);
-                }   
+                        Edge E = new Edge(vertice1, vertice2, Math.random());
+                        G.addEdge(E);
+                        makeDjikstra(G);
+                    }
+                }
             } catch (SocketTimeoutException e) { 
                 //do nothing
             }
@@ -165,12 +165,12 @@ public class Controller {
     }
         
     public void printNodesList() {
-        nodes.forEach((Node_type node) -> {
+        nodes.forEach((NodeType node) -> {
             System.out.println(node.toString());
         });
     }
     
-    public void printNodesMap(Map<Node_type, Double> nodeMap) {
+    public void printNodesMap(Map<NodeType, Double> nodeMap) {
         nodeMap.entrySet().forEach((node) -> {
             System.out.println((node.getKey()).toString() + " :: Delay: " + node.getValue());
         });

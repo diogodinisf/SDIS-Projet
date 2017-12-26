@@ -6,7 +6,7 @@
 package nodedatagramsocket.socket;
 
 import nodedatagramsocket.utils.Display;
-import nodedatagramsocket.utils.Node_type;
+import nodedatagramsocket.utils.NodeType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  * @author eduardo
  */
 public class NodeDatagramSocket {
-    private int id;
+    private int myId = -1;
     private boolean running;
     
     private final int masterPort;
@@ -38,22 +38,24 @@ public class NodeDatagramSocket {
     private final DatagramSocket socket;
     private final DatagramSocket socketDelay;
     private final int port;
-    private Map<Node_type, Double> nodeMap = Collections.synchronizedMap(new HashMap<>());
+    private final int delayPort;
+    private Map<NodeType, Double> nodeMap = Collections.synchronizedMap(new HashMap<>());
 
     public NodeDatagramSocket(int port, String masterHostname, int masterPort) throws SocketException {
         this.port = port;
+        this.delayPort = port + 5000;
         this.masterHostname = masterHostname;
         this.masterPort = masterPort;
+        this.hostname = getMyAddress();
         
         timeInit = System.currentTimeMillis();
-        
-        hostname = getMyAddress();
-        Display.alive("(" + id + ") " + hostname + ":" + port);
-        
+
         socket = new DatagramSocket(this.port);
-        socketDelay = new DatagramSocket(this.port + 5000);
+        socketDelay = new DatagramSocket(this.delayPort);
         Thread threadDelay = new Thread(new getOverlayNetworkFromControler(socketDelay));
         threadDelay.start();
+        
+        Display.alive(hostname + ":" + port + " | delay port: " + delayPort);
         
         joinOverlayNetwork();
     }
@@ -61,17 +63,19 @@ public class NodeDatagramSocket {
     public NodeDatagramSocket(String masterHostname, int masterPort) throws SocketException {
         this.masterHostname = masterHostname;
         this.masterPort = masterPort;
+        this.hostname = getMyAddress();
         
         timeInit = System.currentTimeMillis();
         
         socket = new DatagramSocket();
-        this.port = socket.getPort();
-        hostname = getMyAddress();
-        Display.alive("(" + id + ") " + hostname + ":" + port);
+        socketDelay = new DatagramSocket();
+        this.port = socket.getLocalPort();
+        this.delayPort = socketDelay.getLocalPort();
         
-        socketDelay = new DatagramSocket(this.port + 5000);
         Thread threadDelay = new Thread(new getOverlayNetworkFromControler(socketDelay));
         threadDelay.start();
+        
+        Display.alive(hostname + ":" + port + " | delay port: " + delayPort);
         
         joinOverlayNetwork();
     }
@@ -80,7 +84,7 @@ public class NodeDatagramSocket {
         int toPort = packet.getPort();
         double wait = 0;
         
-        for (Map.Entry<Node_type, Double> node : nodeMap.entrySet()) {
+        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
             if ((node.getKey()).getPort() == toPort) {
                 wait = (double) node.getValue();
                 break;
@@ -97,7 +101,7 @@ public class NodeDatagramSocket {
     
     private void joinOverlayNetwork() {
         try {
-            String str = hostname + "_" + port;
+            String str = "Hello_" + delayPort;
             DatagramPacket packet = new DatagramPacket(str.getBytes(), str.length(), InetAddress.getByName(masterHostname), masterPort);
             socket.send(packet);
         } catch (UnknownHostException ex) {
@@ -154,7 +158,7 @@ public class NodeDatagramSocket {
                     String toClose = new String(packet.getData(), 0, packet.getLength());
                     
                     if (toClose.contentEquals("close")) {
-                        Display.alert(getMyAddress() + ":" + port + " Sockets fechados pelo Manager");
+                        Display.alert("(" + getId() + ")" + " Sockets fechados pelo Manager");
                         running = false;
                     } else {
                         receivedBytes = packet.getLength();
@@ -168,11 +172,13 @@ public class NodeDatagramSocket {
                         Object object = iStream.readObject();
                             
                         nodeMap.clear();
-                        nodeMap.putAll((Map<Node_type, Double>)object);
+                        nodeMap.putAll((Map<NodeType, Double>)object);
 
                         if (tempo == false) {
                             double total_time = System.currentTimeMillis();
-                            Display.info(getMyAddress() + ":" + port + " adquiriu lista de atrados em " + (total_time - getInitTime()));
+                            getMyId();
+                            Display.receive(getMyAddress() + ":" + port + " recebeu o ID: " + getId());
+                            Display.info("(" + getId() + ")" + " adquiriu lista de atrados em " + (total_time - getInitTime()) + "ms");
                             tempo = true;
                         }
 
@@ -194,12 +200,66 @@ public class NodeDatagramSocket {
         return port;
     }
     
+    private void getMyId() {
+        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+            if (port == node.getKey().getPort()) {
+                if (node.getKey().getIp().equalsIgnoreCase(hostname)) {
+                    myId = node.getKey().getId();
+                }
+            } 
+        }
+    }
+    
+    public int getId() {
+        return myId;
+    }
+    
+    
+    public int getIdByAddress(String address) {
+        int id = -1;
+        String[] split = address.split(":");
+        
+        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+            if (Integer.parseInt(split[1]) == node.getKey().getPort()) {
+                if (node.getKey().getIp().equalsIgnoreCase(split[0])) {
+                    id = node.getKey().getId();
+                }
+            } 
+        }
+        
+        return id;
+    }
+    
     public DatagramSocket getSocket() {
         return socket;
     }
     
     public double getInitTime() {
         return timeInit;
+    }
+    
+    public int getPortById(int id) {
+        int port = 0;
+        
+        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+            if (id == node.getKey().getId()) {
+                port = node.getKey().getPort();
+            } 
+        }
+        
+        return port;
+    }
+    
+    public String getIpById(int id) {
+        String address = null;
+        
+        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+            if (id == node.getKey().getId()) {
+                address = node.getKey().getIp();
+            } 
+        }
+        
+        return address;
     }
     
     public static String getMyAddress() {
@@ -232,12 +292,12 @@ public class NodeDatagramSocket {
     }
     
     public void printNodesMap() {
-        nodeMap.entrySet().forEach((node) -> {
+        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
             if (port == node.getKey().getPort()) {
                 Display.receive((node.getKey()).toString() + " :: Delay: " + node.getValue());
             } else {
                 System.out.println((node.getKey()).toString() + " :: Delay: " + node.getValue());
             }
-        });
+        }
     }
 }
