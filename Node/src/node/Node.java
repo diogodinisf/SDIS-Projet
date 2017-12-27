@@ -14,7 +14,6 @@ public class Node {
     
     private int port;
     private NodeDatagramSocket socket;
-    private ThreadToSend threadToSend;
     private Thread thread_send;
     private Thread thread_recv;
     
@@ -32,7 +31,7 @@ public class Node {
     public void run(NodeDatagramSocket socket) throws SocketException {
         thread_recv = new Thread(new ThreadToReceive(socket, this)); //multiplicar para checkar
         thread_recv.start();
-        thread_send = new Thread(threadToSend = new ThreadToSend(socket)); //multiplicar para checkar
+        thread_send = new Thread(new ThreadToSend(socket)); //multiplicar para checkar
         thread_send.start();
     }
     
@@ -45,6 +44,6 @@ public class Node {
     }
     
     public void closeProgram() {
-        threadToSend.close();
+        System.exit(0);
     }
 }
