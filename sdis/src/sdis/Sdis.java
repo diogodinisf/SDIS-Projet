@@ -132,7 +132,7 @@ public class Sdis {
 
                 Edge E = new Edge (vertice1, vertice2, Math.random());
                 G.addEdge(E);
-              //  StdOut.println(G);
+                //StdOut.println(G);
                 makeDjikstra(G);
             }
            // System.out.println("I know these ports");
