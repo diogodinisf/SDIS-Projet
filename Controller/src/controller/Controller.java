@@ -89,8 +89,6 @@ public class Controller {
     }
     
     public void closeAllNodes() {
-        String msg = "close";
-        
         try {    
             DatagramSocket socket = new DatagramSocket();
             
@@ -105,8 +103,6 @@ public class Controller {
     }
     
     public void closeNode(int id) {
-        String msg = "close";
-        
         try {    
             DatagramSocket socket = new DatagramSocket();
             
