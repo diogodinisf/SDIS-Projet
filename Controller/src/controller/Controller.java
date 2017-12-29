@@ -77,27 +77,68 @@ public class Controller {
         }
     }
     
-    // pede a todos os nós para fecharem - porreiro para debugging
-    public void sendClose() {
+    public void closeAllNodes() {
         String msg = "close";
         
         try {    
             DatagramSocket socket = new DatagramSocket();
             
-            nodes.forEach((node) -> {
-                try {
-                    InetAddress address = InetAddress.getByName(node.getIp());
-                    DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, node.getDelayPort());
-                    socket.send(packet);
-                } catch (UnknownHostException ex) {
-                    Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
-                }
+            nodes.forEach((NodeType node) -> {
+                sendMessage("close", node, socket);
             });
             
             socket.close();
         } catch (SocketException ex) {
+            Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void closeNode(int id) {
+        String msg = "close";
+        
+        try {    
+            DatagramSocket socket = new DatagramSocket();
+            
+            NodeType node = getNodeById(id);
+            sendMessage("close", node, socket);
+            
+            G = G.removeNode(G, id);
+            nodes.remove(getNodeById(id));
+            makeDjikstra(G);
+            
+            socket.close();
+        } catch (NullPointerException ex) {
+            Logger.getLogger(Controller.class.getName()).log(Level.WARNING, null, ex);
+        } catch (SocketException ex) {
+            Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public NodeType getNodeById(int id) throws NullPointerException {
+        NodeType node = null;
+        
+        for (NodeType node1: nodes) {
+            if (node1.getId() == id) {
+                node = node1;
+            }
+        }
+        
+        if (node == null) {
+            throw new NullPointerException("O nó que está a tentar fechar não existe no sistema!");
+        }
+        
+        return node;
+    }
+    
+    // pede a todos os nós para fecharem
+    public void sendMessage(String msg, NodeType node, DatagramSocket socket) {
+        try {
+            InetAddress address = InetAddress.getByName(node.getIp());
+            DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, node.getDelayPort());
+            socket.send(packet);
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
             Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -148,6 +189,14 @@ public class Controller {
                     Nodes = Nodes + 1;
                     if (Nodes == 1) {
                         G = new EdgeWeightedGraph(Nodes); 
+                        
+                        try {    
+                            DatagramSocket socketHello = new DatagramSocket();
+                            sendMessage("hello", node, socketHello);
+                            socketHello.close();
+                        } catch (SocketException ex) {
+                            Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     } else {
                         G.addNode();
                         int vertice1 = (int)(Math.random() * (Nodes - 1));
@@ -182,7 +231,7 @@ public class Controller {
     
     public void close() {
         running = false;
-        sendClose();
+        closeAllNodes();
     }
     
     public static void main(String[] args) throws SocketException, IOException {

@@ -15,6 +15,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -137,6 +138,7 @@ public class NodeDatagramSocket {
     //verificar - podes correr em loop - ele vai bloquear no socketDelay.receive(), logo só percorre o loop quando recebe um pacote
     private class getOverlayNetworkFromControler implements Runnable {
         private final DatagramSocket socketDelay;
+        private final int timeout = 1000; // 1 segundo à espera que o master responda
         
         public getOverlayNetworkFromControler(DatagramSocket socketDelay){
             this.socketDelay = socketDelay;
@@ -147,6 +149,12 @@ public class NodeDatagramSocket {
             boolean tempo = false;
             running = true;
             
+            try {
+                socketDelay.setSoTimeout(timeout);
+            } catch (SocketException ex) {
+                Logger.getLogger(NodeDatagramSocket.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
             while (running) {
                 byte[] receiveData = new byte[64 * 1024];
                 int receivedBytes;
@@ -155,10 +163,17 @@ public class NodeDatagramSocket {
                     DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
                 
                     socketDelay.receive(packet);
-                    String toClose = new String(packet.getData(), 0, packet.getLength());
+                    String message = new String(packet.getData(), 0, packet.getLength());
                     
-                    if (toClose.contentEquals("close")) {
-                        Display.alert("(" + getId() + ")" + " Sockets fechados pelo Manager");
+                    if (message.contentEquals("hello")) {
+                        socketDelay.setSoTimeout(0); // retira o timeout - espera indefinidamente
+                    } else if (message.contentEquals("close")) {
+                        if (getId() == -1) {
+                            Display.alert("Socket fechado pelo Manager");
+                        } else {
+                            Display.alert("(" + getId() + ")" + " Socket fechado pelo Manager");
+                        }
+                        
                         running = false;
                     } else {
                         receivedBytes = packet.getLength();
@@ -180,10 +195,15 @@ public class NodeDatagramSocket {
                             Display.receive(getMyAddress() + ":" + port + " recebeu o ID: " + getId());
                             Display.info("(" + getId() + ")" + " adquiriu lista de atrados em " + (total_time - getInitTime()) + "ms");
                             tempo = true;
+                            socketDelay.setSoTimeout(0); // retira o timeout - espera indefinidamente
                         }
 
                         iStream.close();
                     }
+                } catch(SocketTimeoutException ex) {
+                    Display.alert("Controlador não respondeu ao pedido de rede, timeout de " + timeout + " ms");
+                    Display.alive("Verifique que inicializou o controlador.");
+                    running = false;
                 } catch (SocketException | ClassNotFoundException ex) {
                     Logger.getLogger(NodeDatagramSocket.class.getName()).log(Level.SEVERE, null, ex);
                 } catch(IOException e){
@@ -238,13 +258,17 @@ public class NodeDatagramSocket {
         return timeInit;
     }
     
-    public int getPortById(int id) {
-        int port = 0;
+    public int getPortById(int id) throws NullPointerException {
+        int port = -1;
         
         for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
             if (id == node.getKey().getId()) {
                 port = node.getKey().getPort();
             } 
+        }
+        
+        if (port == -1) {
+            throw new NullPointerException("Não existe nenhum nó com o ID " + id + "!");
         }
         
         return port;
@@ -259,13 +283,17 @@ public class NodeDatagramSocket {
             } 
         }
         
+        if (address == null) {
+            throw new NullPointerException("Não existe nenhum nó com o ID " + id + "!");
+        }
+        
         return address;
     }
     
     public static String getMyAddress() {
         String address = null;
-
-        // obter o hostname, credo que esta treta demora, vamos acreditar que aqui não se usa endereços do tipo 10.x.x.x
+        
+        // isto não é uma maneira muito bonita de encontrar o endereço da máquina
         Enumeration e;
         try {
             e = NetworkInterface.getNetworkInterfaces();
@@ -279,6 +307,18 @@ public class NodeDatagramSocket {
                     String host = i.getHostAddress();
                     if (host.contains(".")) {
                         if ((host.split("\\."))[0].equalsIgnoreCase("192")) {
+                            address = host;
+                        }
+                        
+                        if ((host.split("\\."))[0].equalsIgnoreCase("193")) {
+                            address = host;
+                        }
+                        
+                        if ((host.split("\\."))[0].equalsIgnoreCase("172")) {
+                            address = host;
+                        }
+                        
+                        if ((host.split("\\."))[0].equalsIgnoreCase("173")) {
                             address = host;
                         }
                     }

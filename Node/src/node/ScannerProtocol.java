@@ -110,12 +110,19 @@ public class ScannerProtocol {
     }
     
     private void sendMessage(int toId, String msg) throws UnknownHostException, IOException {
-        String toIp = socket.getIpById(toId);
-        int toPort = socket.getPortById(toId);
+        String toIp;
+        int toPort;
         
-        InetAddress address = InetAddress.getByName(toIp);
-        Display.info("Enviado: " + msg);
-        DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, toPort);
-        socket.send(packet);
+        try {
+            toIp = socket.getIpById(toId);
+            toPort = socket.getPortById(toId);
+            
+            InetAddress address = InetAddress.getByName(toIp);
+            Display.info("Enviado: " + msg);
+            DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, toPort);
+            socket.send(packet);
+        } catch (NullPointerException ex) {
+            Display.alert(ex.toString());
+        }
     }
 }

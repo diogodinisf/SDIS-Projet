@@ -28,8 +28,8 @@ public class ManagerScannerProtocol {
     public enum MessageType {
         HELP("help", "Displays this message",
                 "help", Arrays.asList("h")),
-        CLOSE("close", "Closes the overlay network",
-                "close", Arrays.asList("disconnect", "exit", "kill")),
+        CLOSE("close", "Closes the overlay network or a specifiq node",
+                "close i", Arrays.asList("disconnect", "exit", "kill")),
         DRAW("draw", "Draw the graph in a separate window",
                 "draw", Arrays.asList("graph", "desenhar", "grafo", "esquema", "scheme")),
         DJIKSTRA("djikstra", "Show nodes connections with delays",
@@ -89,7 +89,17 @@ public class ManagerScannerProtocol {
         }
         
         if(MessageType.CLOSE.getKeys().contains(word)) {
-            close();
+            try {
+                if (words.get(1).equalsIgnoreCase("all")) {
+                    close();
+                } else {
+                    closeNode(Integer.parseInt(words.get(1)));
+                }
+            } catch (IndexOutOfBoundsException ex) {
+                // cliente escreveu apenas close
+                close();
+            }
+            
         }
     }
 
@@ -101,9 +111,14 @@ public class ManagerScannerProtocol {
     }
 
     private void close() {
+        
         father.close();
     }
 
+    private void closeNode(int id) {
+        controller.closeNode(id);
+    }
+    
     private void info() {
         controller.printNodesList();
     }
