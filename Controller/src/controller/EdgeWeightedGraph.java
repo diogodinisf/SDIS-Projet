@@ -146,7 +146,33 @@ public class EdgeWeightedGraph {
         }
     }
 
-
+    public EdgeWeightedGraph removeNode (EdgeWeightedGraph G, int node) {
+        EdgeWeightedGraph G2 = new EdgeWeightedGraph(G.V()); //menos um nó
+        int edgesCount =0;
+        for(int v = 0 ; v < G.V() ; v++){
+            if(v == node){
+                edgesCount += G2.degree(v);
+                continue;
+            }
+            Stack<Edge> reverse = new Stack<Edge>();
+            for (Edge e : G.adj[v]) {
+                reverse.push(e);
+            }
+            for (Edge e : reverse) {
+                if(e.either()==node || e.other(e.either()) ==node ){
+                    edgesCount++;
+                    continue;
+                }
+                else{
+                   
+                    G2.adj[v].add(e);
+                }
+            }
+        }
+        G2.E = edgesCount;
+        return G2;
+    }
+    
     /**
      * Returns the number of vertices in this edge-weighted graph.
      *
