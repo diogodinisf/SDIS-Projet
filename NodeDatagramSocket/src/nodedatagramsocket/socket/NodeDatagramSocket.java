@@ -39,7 +39,7 @@ public class NodeDatagramSocket {
     private final DatagramSocket socketDelay;
     private final int port;
     private final int delayPort;
-    private Map<NodeType, Double> nodeMap = Collections.synchronizedMap(new HashMap<>());
+    private Map<NodeType, double[]> nodeMap = Collections.synchronizedMap(new HashMap<>());
 
     public NodeDatagramSocket(int port, String masterHostname, int masterPort) throws SocketException {
         this.port = port;
@@ -82,17 +82,24 @@ public class NodeDatagramSocket {
 
     public void send(DatagramPacket packet) throws IOException {
         int toPort = packet.getPort();
+        int id = -1;
         double wait = 0;
+        double errorRate = 0;
         
-        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+        for (Map.Entry<NodeType, double[]> node : nodeMap.entrySet()) {
             if ((node.getKey()).getPort() == toPort) {
-                wait = (double) node.getValue();
+                wait = (node.getValue())[0];
+                errorRate = (node.getValue())[1];
+                id = node.getKey().getId();
                 break;
             }
         }
         
-        Thread thread = new Thread(new sendData(packet, wait * 10000)); //multiplicar para checkar
-        thread.start();
+        if (Math.random() > errorRate) {
+            (new Thread(new sendData(packet, wait * 1000))).start();
+        } else {
+            Display.alert("Falhou envio para " + id);
+        }
     }
     
     public void receive(DatagramPacket packet) throws IOException {
@@ -172,7 +179,7 @@ public class NodeDatagramSocket {
                         Object object = iStream.readObject();
                             
                         nodeMap.clear();
-                        nodeMap.putAll((Map<NodeType, Double>)object);
+                        nodeMap.putAll((Map<NodeType, double[]>)object);
 
                         if (tempo == false) {
                             double total_time = System.currentTimeMillis();
@@ -201,7 +208,7 @@ public class NodeDatagramSocket {
     }
     
     private void getMyId() {
-        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+        for (Map.Entry<NodeType, double[]> node : nodeMap.entrySet()) {
             if (port == node.getKey().getPort()) {
                 if (node.getKey().getIp().equalsIgnoreCase(hostname)) {
                     myId = node.getKey().getId();
@@ -219,7 +226,7 @@ public class NodeDatagramSocket {
         int id = -1;
         String[] split = address.split(":");
         
-        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+        for (Map.Entry<NodeType, double[]> node : nodeMap.entrySet()) {
             if (Integer.parseInt(split[1]) == node.getKey().getPort()) {
                 if (node.getKey().getIp().equalsIgnoreCase(split[0])) {
                     id = node.getKey().getId();
@@ -241,7 +248,7 @@ public class NodeDatagramSocket {
     public int getPortById(int id) {
         int port = 0;
         
-        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+        for (Map.Entry<NodeType, double[]> node : nodeMap.entrySet()) {
             if (id == node.getKey().getId()) {
                 port = node.getKey().getPort();
             } 
@@ -253,7 +260,7 @@ public class NodeDatagramSocket {
     public String getIpById(int id) {
         String address = null;
         
-        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+        for (Map.Entry<NodeType, double[]> node : nodeMap.entrySet()) {
             if (id == node.getKey().getId()) {
                 address = node.getKey().getIp();
             } 
@@ -292,11 +299,11 @@ public class NodeDatagramSocket {
     }
     
     public void printNodesMap() {
-        for (Map.Entry<NodeType, Double> node : nodeMap.entrySet()) {
+        for (Map.Entry<NodeType, double[]> node : nodeMap.entrySet()) {
             if (port == node.getKey().getPort()) {
-                Display.receive((node.getKey()).toString() + " :: Delay: " + node.getValue());
+                Display.receive((node.getKey()).toString());
             } else {
-                System.out.println((node.getKey()).toString() + " :: Delay: " + node.getValue());
+                System.out.println((node.getKey()).toString() + " | Delay: " + node.getValue()[0] + " | T.falhas: " + node.getValue()[1]);
             }
         }
     }
