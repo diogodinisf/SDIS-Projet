@@ -31,6 +31,6 @@ public class NodeType implements java.io.Serializable {
     
     @Override
     public String toString() {
-        return "ID: " + id + " :: Endereço: " + ip + ":" + port + " | delay port: " + delayPort;
+        return "ID " + id + ": " + ip + ":" + port + " | delay port: " + delayPort;
     }
 }

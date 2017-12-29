@@ -39,18 +39,29 @@ public class Controller {
     // @params: EdgeWeightedGraph G - Graph made using edu.princeton.cs.algs4.EdgeWeightedGraph;
     public void makeDjikstra(EdgeWeightedGraph G) {
         int s, t;
+        double successRate;
+        double errorRate, totalErrorRate;
         
         for (NodeType node : nodes) {
-            Map<NodeType, Double> nodeMap = new HashMap<>();
+            Map<NodeType, double[]> nodeMap = new HashMap<>();
             
             s = node.getId();
             DijkstraUndirectedSP sp = new DijkstraUndirectedSP(G, s);
             
             for (NodeType otherNode : nodes) {
                 t = otherNode.getId();
+                successRate = 1;
                 
                  if (sp.hasPathTo(t)) {
-                    nodeMap.put(otherNode, sp.distTo(t));
+                    for (Edge e : sp.pathTo(t)) {
+                        errorRate = Math.abs(1.0 - e.weight());
+                        successRate = successRate * (1 - errorRate);
+                    }
+                    
+                    totalErrorRate = (1 - successRate) * 1; //poderação para não ser demasiado elevado
+                    double[] args = {sp.distTo(t), totalErrorRate};
+                    
+                    nodeMap.put(otherNode, args);
                 }
             }
             
@@ -78,8 +89,6 @@ public class Controller {
     }
     
     public void closeAllNodes() {
-        String msg = "close";
-        
         try {    
             DatagramSocket socket = new DatagramSocket();
             
@@ -94,8 +103,6 @@ public class Controller {
     }
     
     public void closeNode(int id) {
-        String msg = "close";
-        
         try {    
             DatagramSocket socket = new DatagramSocket();
             
