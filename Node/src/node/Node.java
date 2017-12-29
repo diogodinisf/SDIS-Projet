@@ -9,7 +9,7 @@ import nodedatagramsocket.socket.NodeDatagramSocket;
  * @author eduardo
  */
 public class Node {
-    private static final String MASTER_HOSTNAME = "193.137.144.99";
+    private static final String MASTER_HOSTNAME = "192.168.1.8";
     private static final int MASTER_PORT = 6789;
     
     private int port;
