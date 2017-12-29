@@ -5,7 +5,7 @@
  */
 package node2;
 
-import node2.NodeV2;
+import node2.Node2;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -21,11 +21,11 @@ import nodedatagramsocketv2.socket.NodeDatagramSocket;
 public class threadToReceive implements Runnable {
 
     private NodeDatagramSocket socket;
-    private final NodeV2 father;
+    private final Node2 father;
     private boolean running;
     
     
-    threadToReceive(NodeDatagramSocket socket, NodeV2 father){
+    threadToReceive(NodeDatagramSocket socket, Node2 father){
         this.socket=socket;
         this.father=father;
         running=true;

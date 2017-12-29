@@ -15,7 +15,7 @@ import nodedatagramsocketv2.socket.NodeDatagramSocket;
  *
  * @author eduardo
  */
-public class NodeV2 {
+public class Node2 {
     
     private static final String MASTER_HOSTNAME = "192.168.1.8";
    
@@ -53,14 +53,14 @@ public class NodeV2 {
         if(args.length <=1 ){
             oneNodePerJVM=true;
             if ((args.length == 0) || (Integer.parseInt(args[0]) == -1)) {
-                new NodeV2().start();
+                new Node2().start();
             } else {
-                new NodeV2().start(Integer.valueOf(args[0]));        
+                new Node2().start(Integer.valueOf(args[0]));        
             }
             try {
                 TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException ex) {
-                Logger.getLogger(NodeV2.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Node2.class.getName()).log(Level.SEVERE, null, ex);
             }
             
         }
@@ -69,14 +69,14 @@ public class NodeV2 {
             int max_id = Integer.valueOf(args[1]);
             for(int i=id ; i< (id+max_id) ; i++){
                 if ((args.length == 0) || (Integer.parseInt(args[0]) == -1)) {
-                    new NodeV2().start();
+                    new Node2().start();
                 } else {
-                    new NodeV2().start(i);        
+                    new Node2().start(i);        
                 }
                 try {
                     TimeUnit.SECONDS.sleep(2);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(NodeV2.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Node2.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }      
         }
