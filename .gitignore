@@ -1,9 +1,15 @@
 ## ignore files
 
-Node/build/
-Node/dist/
-Node/nbproject/private
+Node2/nbproject/private/
+Node2/build/
+Node2/dist/
 
-sdis/build/
-sdis/dist
-sdis/nbproject/private
+NodeDatagramSocketV2/nbproject/private/
+NodeDatagramSocketV2/build/
+NodeDatagramSocketV2/dist/
+
+ControllerV2/nbproject/private/
+ControllerV2/build/
+ControllerV2/dist/
+
+*.directory
