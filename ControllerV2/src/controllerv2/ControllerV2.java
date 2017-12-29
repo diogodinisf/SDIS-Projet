@@ -31,11 +31,14 @@ public class ControllerV2 {
     private boolean running;
     private int[] ports= new int[1];
     private double[] delay;
+    private String[] nodesIP = new String[1];
     private InetAddress group; 
     private String groupIP="228.5.6.7";
     private int groupPort=6789;
     
     public void makeDjikstra(EdgeWeightedGraph G){
+        
+        
         
         delay = new double[G.V()];
         for (int s = 0; s< G.V() ; s++){
@@ -90,7 +93,7 @@ public class ControllerV2 {
         for(int i = 0; i<G.V() ; i++){
             
             for(Edge e: G.adj(i)){
-                String str =  e.either() + " " + e.other(e.either()) + " " + e.weight() + " " + Integer.toString(ports[e.either()]) + " "+Integer.toString(ports[e.other(e.either())]) ;
+                String str =  e.either() + " " + e.other(e.either()) + " " + e.weight() + " " +  Integer.toString(ports[e.either()]) + " "+Integer.toString(ports[e.other(e.either())]) + " " + nodesIP[e.either()] + " " + nodesIP[e.other(e.either())] ;
                 writer.write(str + "\n");
             }
         }
@@ -100,7 +103,11 @@ public class ControllerV2 {
     
     public void printNodesList(){
         for (int i =0; i< min(ports.length,delay.length); i++){
-            System.out.println("Node "+i+" port "+ports[i]+ " delay "+delay[i]);
+            if(G.degree(i)==0){
+                System.out.println("Node "+i+" No path");
+            }else{
+                System.out.println("Node "+i+ " ip "+ nodesIP[i] + " port "+ports[i]);
+            }
         }
     }
     
@@ -129,10 +136,15 @@ public class ControllerV2 {
             
             //aloca mais memoria para guardar as portas dos nodes
             int[] ports_aux = new int[Nodes+1];
+            String [] nodesIP_aux = new String[Nodes +1];
             System.arraycopy(ports, 0, ports_aux, 0, Nodes);
+            System.arraycopy(nodesIP, 0, nodesIP_aux, 0, Nodes);
             ports = new int[Nodes+1];
+            nodesIP = new String[Nodes +1];
             System.arraycopy(ports_aux, 0, ports, 0, Nodes+1);
+            System.arraycopy(nodesIP_aux, 0, nodesIP, 0, Nodes+1);
             ports[Nodes] = packet.getPort();
+            nodesIP[Nodes]=String.valueOf(packet.getAddress()).replaceAll("/","");
 
             
             Nodes = Nodes +1 ;
@@ -151,7 +163,7 @@ public class ControllerV2 {
                 writeFile();//update do ficheiro partilhado
                 
                 //envia por multicast as novas edges
-                String newEdge = vertice1 + "_" + vertice2 + "_" + weight + "_" + ports[vertice1] + "_" +ports[vertice2];
+                String newEdge = vertice1 + "_" + vertice2 + "_" + weight + "_" + ports[vertice1] + "_" +ports[vertice2] + "_" + nodesIP[vertice1]+ "_" + nodesIP[vertice2];
                 DatagramPacket packetWithEdge = new DatagramPacket(newEdge.getBytes(), newEdge.length(), group, groupPort);
                 s.send(packetWithEdge);
 
@@ -202,6 +214,11 @@ public class ControllerV2 {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
+        
+        
+        
+        
+        
         ControllerV2 master = new ControllerV2();
         master.run();
     }

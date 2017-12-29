@@ -169,7 +169,7 @@ public EdgeWeightedGraph removeNode (EdgeWeightedGraph G, int node) {
                 }
             }
         }
-        G2.E = edgesCount;
+        G2.E = G.E()-edgesCount;
         return G2;
     }
 

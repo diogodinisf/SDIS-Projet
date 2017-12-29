@@ -20,17 +20,19 @@ public class threadToReceive implements Runnable {
 
     private NodeDatagramSocket socket;
     private final OverlayNetworkNodeV2 father;
+    private boolean running;
     
     
     threadToReceive(NodeDatagramSocket socket, OverlayNetworkNodeV2 father){
         this.socket=socket;
         this.father=father;
+        running=true;
     }
     
     @Override
     public void run(){
         try{
-            while(true){
+            while(running){
                 byte[] receiveData=new byte[ 64*1024 ];
                 DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
                 socket.receive(packet);
@@ -39,6 +41,7 @@ public class threadToReceive implements Runnable {
             }
         }catch (SocketException ex) {
             // socket foi fechado, é algo normal
+            running=false;
             father.closeProgram();
         } catch (IOException ex) {
             Logger.getLogger(threadToReceive.class.getName()).log(Level.SEVERE, null, ex);

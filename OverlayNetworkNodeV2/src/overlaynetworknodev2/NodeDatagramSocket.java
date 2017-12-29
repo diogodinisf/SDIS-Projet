@@ -45,10 +45,13 @@ public class NodeDatagramSocket {
     private EdgeWeightedGraph G;
     private int[] ports;
     private double[] delay;
+    private double[] error;
     private Map<NodeType, Double> nodeMap = Collections.synchronizedMap(new HashMap<>());
     private MulticastSocket s;
-    private int id=0;
+    private int id;
     private boolean running=true;
+    private String[] nodesIP;
+    private boolean idSet=false;
     
     public NodeDatagramSocket (int port, String masterHostname) throws SocketException{
         
@@ -98,10 +101,22 @@ public class NodeDatagramSocket {
         //InetAddress address = InetAddress.getByName("localhost");//para ja localhost, vou alterar pa saber o ip pelo ficheiro
         //packet.setPort(toPort);
         //packet.setAddress(address);
-        
+        double errorRate = error[nodeId];
         double wait=delay[nodeId];
-        Thread thread = new Thread(new sendData(packet,wait*10000)); //multiplicar para checkar
-        thread.start();
+        if(wait == -1){
+            System.out.println("Node "+nodeId+" doesn't exist anymore !");
+        }
+        else if(wait == 0 && nodeId != id){
+            System.out.println("There is no path for that node");
+        }
+        else {
+            if (Math.random() < errorRate) {
+                Thread thread = new Thread(new sendData(packet,wait*10000)); //multiplicar para checkar
+                thread.start();
+            }else {
+                Display.alert("Falhou envio para " + nodeId);
+            }
+        }
     }
     
     public class sendData implements Runnable {
@@ -132,6 +147,9 @@ public class NodeDatagramSocket {
     }
     
     public int getPortById(int id) {
+        if(id >= ports.length){
+            return -1;
+        }
         int port =0;
         port=ports[id];
         return port;
@@ -140,7 +158,14 @@ public class NodeDatagramSocket {
     public void printNodesMap(){
         
         for (int i=0; i<min(ports.length, delay.length); i++){
-            Display.receive("node "+i +" port "+ ports[i] + " delay "+delay[i]);
+            if(ports[i] == -1 || delay[i]==-1 || ports[i]==0 || nodesIP[i] == null || G.degree(i)==0){
+                Display.receive("node "+i+" No path");
+            }else if(delay[i]==0 && i!= id){
+                Display.receive("node "+i+" No path");
+            }
+            else{
+                Display.receive("node "+i +" ip " +nodesIP[i]+ " port "+ ports[i] + " delay "+delay[i] + " error rate " +error[i]);
+            }
         }
     }
     
@@ -161,6 +186,17 @@ public class NodeDatagramSocket {
                     String host = i.getHostAddress();
                     if (host.contains(".")) {
                         if ((host.split("\\."))[0].equalsIgnoreCase("192")) {
+                            address = host;
+                        }
+                        if ((host.split("\\."))[0].equalsIgnoreCase("193")) {
+                            address = host;
+                       }
+                        
+                        if ((host.split("\\."))[0].equalsIgnoreCase("172")) {
+                            address = host;
+                        }
+                        
+                        if ((host.split("\\."))[0].equalsIgnoreCase("173")) {
                             address = host;
                         }
                     }
@@ -193,6 +229,7 @@ public class NodeDatagramSocket {
                     G= new EdgeWeightedGraph(Nodes);
                     fileMatrix = new String[Nodes];
                     ports = new int[Nodes];
+                    nodesIP = new String[Nodes];
                     continue;
                 }
                 
@@ -203,18 +240,29 @@ public class NodeDatagramSocket {
                 double weight = Double.parseDouble(data[2]);
                 int portV1 = Integer.valueOf(data[3]);
                 int portV2 = Integer.valueOf(data[4]);
-
-                if(IntStream.of(ports).anyMatch(x -> x == portV1) == false){
+                String ipV1 = data[5];
+                String ipV2 = data[6];
+                //cuidado com isto ja nao sei bem o que fiz aqui e como resolver para dar pa usar ips
+                if(IntStream.of(ports).anyMatch(x -> x == portV1) == false ){//se a porta nao existe entao nao ha problemas com ips
                     ports[v1]=portV1;
+                    nodesIP[v1]=ipV1;
+                }else if(IntStream.of(ports).anyMatch(x -> x == portV1) == true && Arrays.asList(nodesIP).contains(ipV1)==false){//se a porta existir é preciso ver se o ip existe ou nao
+                    ports[v1]=portV1;
+                    nodesIP[v1]=ipV1;
+                    
                 }
                 if(IntStream.of(ports).anyMatch(x -> x == portV2) == false){
                     ports[v2]=portV2;
+                    nodesIP[v2]=ipV2;
+                }else if(IntStream.of(ports).anyMatch(x -> x == portV1) == true && Arrays.asList(nodesIP).contains(ipV1)==false){
+                    ports[v2]=portV2;
+                    nodesIP[v2]=ipV2;
                 }
 
                 
                 if (Arrays.asList(fileMatrix).contains(line) == false ){
                     //System.out.println("NEW edge "+v1+" "+v2+" "+ " "+weight);
-                    System.out.println(line);
+                    
                     Edge E = new Edge (v1, v2, weight);
                     G.addEdge(E);
                     fileMatrix[NodeCount] = line;
@@ -264,7 +312,7 @@ public class NodeDatagramSocket {
     Nova ligaçao entre nós. Verifica se os vertices ja existem ou nao. Se nao, adiciona o node antes de adicionar a Edge.
     */
     
-    public void addEdge(int v1, int v2, double w, int portV1, int portV2){
+    public void addEdge(int v1, int v2, double w, int portV1, int portV2, String ipV1, String ipV2){
 
         if(G.V() == 0){ // Caso de ser dos primeiros nós e o ficheiro estar vazio
             G = new EdgeWeightedGraph(1);
@@ -273,50 +321,67 @@ public class NodeDatagramSocket {
             G.addNode();
             int maxVal = max(v1,v2);
             int[] ports_aux = new int[maxVal];
+            String[] nodesIP_aux = new String[maxVal];
             System.arraycopy(ports, 0, ports_aux, 0, ports.length);
+            System.arraycopy(nodesIP, 0, nodesIP_aux, 0, nodesIP.length);
             ports = new int[maxVal+1];
+            nodesIP = new String[maxVal +1];
             System.arraycopy(ports_aux, 0, ports, 0, ports_aux.length);
+            System.arraycopy(nodesIP_aux, 0, nodesIP, 0, nodesIP_aux.length);
         }
         Edge e = new Edge(v1,v2,w);
         G.addEdge(e);
        // System.out.println(G);
-        if(IntStream.of(ports).anyMatch(x -> x == v1) == false){
+        if(IntStream.of(ports).anyMatch(x -> x == portV1) == false ){//se a porta nao existe entao nao ha problemas com ips
             ports[v1]=portV1;
+            nodesIP[v1]=ipV1;
+        }else if(IntStream.of(ports).anyMatch(x -> x == portV1) == true && Arrays.asList(nodesIP).contains(ipV1)==false){//se a porta existir é preciso ver se o ip existe ou nao
+            ports[v1]=portV1;
+            nodesIP[v1]=ipV1;       
         }
-        if(IntStream.of(ports).anyMatch(x -> x == v2) == false){
+        if(IntStream.of(ports).anyMatch(x -> x == portV2) == false){
             ports[v2]=portV2;
+            nodesIP[v2]=ipV2;
+        }else if(IntStream.of(ports).anyMatch(x -> x == portV1) == true && Arrays.asList(nodesIP).contains(ipV1)==false){
+            ports[v2]=portV2;
+            nodesIP[v2]=ipV2;
         }
         
-        if(id ==0){
-
+        if(!idSet){
+           
             for (int i =0; i<ports.length; i++){
-                if(ports[i]==port){
+                if(ports[i]==port && nodesIP[i].equals(hostname)){
                     id=i;
+                    idSet=true;
                 }
             }
+            
         }
         //StdOut.println(G);
 
     }
     
     public void MakeDijkstra(){
+        double successRate;
+        double errorRate, totalErrorRate;
         delay=new double[G.V()];
-    
+        error=new double[G.V()];
               
-            DijkstraUndirectedSP sp = new DijkstraUndirectedSP(G, id);
-            for (int t = 0; t < G.V(); t++) {
-                if (sp.hasPathTo(t)) {
-                  //  StdOut.printf("%d to %d (%.2f)  ", s, t, sp.distTo(t));
-                    for (Edge e : sp.pathTo(t)) {
-                    //    StdOut.print(e );
-                    }
-                   // StdOut.println();
-                    delay[t]= sp.distTo(t);
+        DijkstraUndirectedSP sp = new DijkstraUndirectedSP(G, id);
+        for (int t = 0; t < G.V(); t++) {
+            successRate = 1;
+            if (sp.hasPathTo(t)) {
+
+                for (Edge e : sp.pathTo(t)) {
+                    errorRate = Math.abs(1.0 - e.weight());
+                    successRate = successRate * (1 - errorRate);
                 }
-                else {
-                    //StdOut.printf("%d to %d         no path\n", s, t);
-                }
+                totalErrorRate = (1 - successRate) * 1; //poderação para não ser demasiado elevado
+                error[t]=totalErrorRate;
+                delay[t]= sp.distTo(t);
             }
+    
+        }
             
         
     }
@@ -363,7 +428,13 @@ public class NodeDatagramSocket {
                     }
                     else if (str.startsWith("close")){
                         String[] strData = str.split(" ");
-                        G = G.removeNode(G, Integer.parseInt(strData[1]));
+                        int nodeToRemove = Integer.parseInt(strData[1]);
+                        if(nodeToRemove >= ports.length){
+                            continue;
+                        }
+                        G = G.removeNode(G, nodeToRemove);
+                        delay[nodeToRemove]=-1;
+                        ports[nodeToRemove]=-1;
                         MakeDijkstra();
                         
                         continue;
@@ -371,7 +442,7 @@ public class NodeDatagramSocket {
                     
                     String[] split = str.split("_");
                     
-                    addEdge(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Double.parseDouble(split[2]),Integer.parseInt(split[3]), Integer.parseInt(split[4]));
+                    addEdge(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Double.parseDouble(split[2]),Integer.parseInt(split[3]), Integer.parseInt(split[4]), split[5], split[6]);
                     MakeDijkstra(); //comentar isto se for para usar o "DONE"
                 } catch (IOException ex) {
                     Logger.getLogger(NodeDatagramSocket.class.getName()).log(Level.SEVERE, null, ex);
@@ -379,7 +450,7 @@ public class NodeDatagramSocket {
             }
             s.close();
             socket.close();
-            System.exit(1);
+            //System.exit(1);
         }
     }
 }

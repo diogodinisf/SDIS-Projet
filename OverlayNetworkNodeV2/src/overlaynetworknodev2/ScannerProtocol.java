@@ -111,10 +111,15 @@ public class ScannerProtocol {
         //String toIp = socket.getIpById(toId);
         String toIp = "localhost"; //so por agora
         int toPort = socket.getPortById(toId);
-        
-        InetAddress address = InetAddress.getByName(toIp);
-        Display.info("Enviado: " + msg);
-        DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, toPort);
-        socket.send(packet, toId);
+
+        if(toPort == -1){
+            System.out.println("Node "+toId+" doesn't exist !");
+        }
+        else{
+            InetAddress address = InetAddress.getByName(toIp);
+            Display.info("Enviado: " + msg);
+            DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, toPort);
+            socket.send(packet, toId);
+        }
     }
 }
