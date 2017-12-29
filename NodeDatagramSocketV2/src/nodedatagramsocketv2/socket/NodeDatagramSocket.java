@@ -219,7 +219,7 @@ public class NodeDatagramSocket {
 
             int NodeCount =0;
             String line = null;
-            fileReader = new FileReader("/home/diogo/data.txt");
+            fileReader = new FileReader("/home/eduardo/data.txt");
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             Boolean firstLine = true;
             String[] fileMatrix= null;
