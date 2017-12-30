@@ -4,7 +4,7 @@ if [ $1 ]
 then
 	num=$1
 else
-	num=10
+	num=1
 fi
 
 for i in `seq 0 $(($num - 2))`

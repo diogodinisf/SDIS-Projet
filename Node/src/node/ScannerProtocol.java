@@ -106,7 +106,7 @@ public class ScannerProtocol {
     }
     
     private void whoami() {
-        Display.info(NodeDatagramSocket.getMyAddress() + ":" + socket.getPort());
+        Display.info(socket.getId() + ": " + NodeDatagramSocket.getMyAddress() + ":" + socket.getPort());
     }
     
     private void sendMessage(int toId, String msg) throws UnknownHostException, IOException {

@@ -49,4 +49,8 @@ public class ThreadToSend implements Runnable {
             Logger.getLogger(ThreadToSend.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    public void close() {
+        running = false;
+    }
 }
