@@ -114,7 +114,7 @@ public class NodeDatagramSocket {
             System.out.println("There is no path for that node");
         }
         else {
-            if (Math.random() < errorRate) {
+            if (Math.random() > errorRate) {
                 Thread thread = new Thread(new sendData(packet,wait*10000)); //multiplicar para checkar
                 thread.start();
             }else {
@@ -157,6 +157,11 @@ public class NodeDatagramSocket {
         int port =0;
         port=ports[id];
         return port;
+    }
+    
+    public String getIpById(int id){
+        String ip = nodesIP[id];
+        return ip;
     }
     
     public void printNodesMap(){

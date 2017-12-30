@@ -111,7 +111,7 @@ public class ScannerProtocol {
     
     private void sendMessage(int toId, String msg) throws UnknownHostException, IOException {
         //String toIp = socket.getIpById(toId);
-        String toIp = "localhost"; //so por agora
+        String toIp = socket.getIpById(toId);
         int toPort = socket.getPortById(toId);
 
         if(toPort == -1){
