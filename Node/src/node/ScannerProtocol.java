@@ -82,7 +82,11 @@ public class ScannerProtocol {
         }
 
         if(MessageType.MESSAGE.getKeys().contains(word)) {
-            sendMessage(Integer.parseInt(words.get(1)), message.substring(message.indexOf(words.get(1)) + words.get(1).length()).trim());
+            try {
+                sendMessage(Integer.parseInt(words.get(1)), message.substring(message.indexOf(words.get(1)) + words.get(1).length()).trim());
+            } catch (NumberFormatException ex) {
+                Display.alert("Os identificadores dos nós são números.");
+            }
         }
 
         return false;

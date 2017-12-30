@@ -9,8 +9,8 @@ fi
 
 for i in `seq 0 $(($num - 2))`
 do
-	java -jar "Node/dist/Node.jar" $i &
+	java -jar "Node/dist/Node.jar" &
 	sleep 0.2
 done
 
-java -jar "Node/dist/Node.jar" $((i + 1))
+java -jar "Node/dist/Node.jar"

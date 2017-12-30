@@ -58,7 +58,7 @@ public class Controller {
                         successRate = successRate * (1 - errorRate);
                     }
                     
-                    totalErrorRate = (1 - successRate) * 1; //poderação para não ser demasiado elevado
+                    totalErrorRate = (1 - successRate) * 0.4; //poderação para não ser demasiado elevado
                     double[] args = {sp.distTo(t), totalErrorRate};
                     
                     nodeMap.put(otherNode, args);
