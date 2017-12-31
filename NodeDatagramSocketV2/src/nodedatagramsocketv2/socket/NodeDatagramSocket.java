@@ -33,6 +33,9 @@ import java.util.stream.IntStream;
 import nodedatagramsocketv2.utils.DijkstraUndirectedSP;
 import nodedatagramsocketv2.utils.EdgeWeightedGraph;
 
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 /**
  *
  * @author eduardo
@@ -57,6 +60,8 @@ public class NodeDatagramSocket {
     private String[] nodesIP;
     private boolean idSet=false;
     
+    private ScheduledThreadPoolExecutor threadPool;
+    
     public NodeDatagramSocket (int port, String masterHostname) throws SocketException{
         
         this.port=port;
@@ -73,7 +78,7 @@ public class NodeDatagramSocket {
         ReadGraph();
         SendHELLO();
         
-        
+         this.threadPool = new ScheduledThreadPoolExecutor(50); // alterar para valor maximo desejado da queue
         
     }
     
@@ -115,8 +120,9 @@ public class NodeDatagramSocket {
         }
         else {
             if (Math.random() > errorRate) {
-                Thread thread = new Thread(new sendData(packet,wait*10000)); //multiplicar para checkar
-                thread.start();
+     //           Thread thread = new Thread(new sendData(packet,wait*10000)); //multiplicar para checkar
+       //         thread.start();
+        threadPool.schedule(new sendData(packet), (long) (wait*10000), TimeUnit.MILLISECONDS);
             }else {
                 Display.alert("Falhou envio para " + nodeId);
             }
@@ -126,20 +132,20 @@ public class NodeDatagramSocket {
     public class sendData implements Runnable {
         
         DatagramPacket packet;
-        double wait;
+        //double wait;
         
-        public sendData(DatagramPacket packet, double wait){
+        public sendData(DatagramPacket packet){
             this.packet=packet;
-            this.wait=wait;
+            //this.wait=wait;
         }
         @Override
         public void run(){
             
             try {
     
-                Thread.sleep((long) wait);
+                //Thread.sleep((long) wait);
                 socket.send(packet);
-            } catch (InterruptedException | IOException ex) {
+            } catch (IOException ex) {
                 Logger.getLogger(NodeDatagramSocket.class.getName()).log(Level.SEVERE, null, ex);
             }
 
@@ -300,8 +306,9 @@ public class NodeDatagramSocket {
             String str = "Hello";
             InetAddress address = InetAddress.getByName(masterHostname);
             DatagramPacket packet = new DatagramPacket(str.getBytes(), str.length(), address, masterPort);
-            Thread thread = new Thread(new sendData(packet,0)); //multiplicar para checkar
-            thread.start();
+            threadPool.schedule(new sendData(packet), 0, TimeUnit.MILLISECONDS);
+            //Thread thread = new Thread(new sendData(packet,0)); //multiplicar para checkar
+            //thread.start();
         } catch (UnknownHostException ex) {
             Logger.getLogger(NodeDatagramSocket.class.getName()).log(Level.SEVERE, null, ex);
         }
