@@ -90,7 +90,7 @@ public class ControllerV2 {
         
        // System.out.println(G);
         
-        BufferedWriter writer = new BufferedWriter(new FileWriter("/home/eduardo/data.txt"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter("/home/rui/Desktop/data.txt"));
         writer.write(Integer.toString(G.V()) + " " + Integer.toString(socket.getLocalPort()) + "\n");
         for(int i = 0; i<G.V() ; i++){
             

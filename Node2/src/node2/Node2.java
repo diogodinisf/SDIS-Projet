@@ -32,8 +32,8 @@ public class Node2 {
         socket = new NodeDatagramSocket(port, MASTER_HOSTNAME); //A PORTA VAI NO FICHEIRO
         run();
     }
-    
-    public void start() throws SocketException {
+   
+   public void start() throws SocketException {
         socket = new NodeDatagramSocket( MASTER_HOSTNAME);
         run();
     }

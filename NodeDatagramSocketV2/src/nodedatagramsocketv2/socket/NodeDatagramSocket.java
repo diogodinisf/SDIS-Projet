@@ -68,6 +68,7 @@ public class NodeDatagramSocket {
         this.masterHostname=masterHostname;
         this.hostname=getMyAddress();
         
+        this.threadPool = new ScheduledThreadPoolExecutor(50); // alterar para valor maximo desejado da queue
         timeInit = System.currentTimeMillis();
         
         socket= new DatagramSocket(port);
@@ -78,15 +79,15 @@ public class NodeDatagramSocket {
         ReadGraph();
         SendHELLO();
         
-         this.threadPool = new ScheduledThreadPoolExecutor(50); // alterar para valor maximo desejado da queue
+
         
     }
-    
+
     public NodeDatagramSocket(String masterHostname) throws SocketException{
         
         this.masterHostname=masterHostname;
         this.hostname=getMyAddress();
-        
+        this.threadPool = new ScheduledThreadPoolExecutor(50); // alterar para valor maximo desejado da queue
         timeInit = System.currentTimeMillis();
         
         socket= new DatagramSocket();
@@ -230,7 +231,7 @@ public class NodeDatagramSocket {
 
             int NodeCount =0;
             String line = null;
-            fileReader = new FileReader("/home/eduardo/data.txt");
+            fileReader = new FileReader("/home/rui/Desktop/data.txt");
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             Boolean firstLine = true;
             String[] fileMatrix= null;
@@ -307,8 +308,8 @@ public class NodeDatagramSocket {
             InetAddress address = InetAddress.getByName(masterHostname);
             DatagramPacket packet = new DatagramPacket(str.getBytes(), str.length(), address, masterPort);
             threadPool.schedule(new sendData(packet), 0, TimeUnit.MILLISECONDS);
-            //Thread thread = new Thread(new sendData(packet,0)); //multiplicar para checkar
-            //thread.start();
+     //       Thread thread = new Thread(new sendData(packet,0)); //multiplicar para checkar
+       //     thread.start();
         } catch (UnknownHostException ex) {
             Logger.getLogger(NodeDatagramSocket.class.getName()).log(Level.SEVERE, null, ex);
         }
