@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
@@ -35,6 +36,8 @@ import nodedatagramsocketv2.utils.EdgeWeightedGraph;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  *
@@ -60,7 +63,7 @@ public class NodeDatagramSocket {
     private String[] nodesIP;
     private boolean idSet=false;
     
-    private ScheduledThreadPoolExecutor threadPool;
+    private final ScheduledExecutorService threadPool;
     
     public NodeDatagramSocket (int port, String masterHostname) throws SocketException{
         
@@ -68,7 +71,8 @@ public class NodeDatagramSocket {
         this.masterHostname=masterHostname;
         this.hostname=getMyAddress();
         
-        this.threadPool = new ScheduledThreadPoolExecutor(50); // alterar para valor maximo desejado da queue
+        this.threadPool = Executors.newScheduledThreadPool(50); // alterar para valor maximo desejado da queue
+        
         timeInit = System.currentTimeMillis();
         
         socket= new DatagramSocket(port);
@@ -87,7 +91,7 @@ public class NodeDatagramSocket {
         
         this.masterHostname=masterHostname;
         this.hostname=getMyAddress();
-        this.threadPool = new ScheduledThreadPoolExecutor(50); // alterar para valor maximo desejado da queue
+        this.threadPool = Executors.newScheduledThreadPool(50); // alterar para valor maximo desejado da queue
         timeInit = System.currentTimeMillis();
         
         socket= new DatagramSocket();
@@ -123,6 +127,7 @@ public class NodeDatagramSocket {
             if (Math.random() > errorRate) {
      //           Thread thread = new Thread(new sendData(packet,wait*10000)); //multiplicar para checkar
        //         thread.start();
+      // sendData sender = new sendData(packet);
         threadPool.schedule(new sendData(packet), (long) (wait*10000), TimeUnit.MILLISECONDS);
             }else {
                 Display.alert("Falhou envio para " + nodeId);
@@ -304,10 +309,13 @@ public class NodeDatagramSocket {
     
     public void SendHELLO() {
         try {
-            String str = "Hello";
+            String str = "Hello i am node: " + Integer.toString(this.id) + " from " + this.masterHostname 
+                            + ":" + Integer.toString(this.port);
+            
             InetAddress address = InetAddress.getByName(masterHostname);
             DatagramPacket packet = new DatagramPacket(str.getBytes(), str.length(), address, masterPort);
-            threadPool.schedule(new sendData(packet), 0, TimeUnit.MILLISECONDS);
+                  sendData sender = new sendData(packet);
+        threadPool.schedule(sender, (long) 0, TimeUnit.MILLISECONDS);
      //       Thread thread = new Thread(new sendData(packet,0)); //multiplicar para checkar
        //     thread.start();
         } catch (UnknownHostException ex) {

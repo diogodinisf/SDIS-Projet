@@ -18,6 +18,7 @@ import java.net.MulticastSocket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nodedatagramsocketv2.utils.DijkstraUndirectedSP;
+import nodedatagramsocketv2.utils.Display;
 import nodedatagramsocketv2.utils.EdgeWeightedGraph;
 
 /**
@@ -134,8 +135,9 @@ public class ControllerV2 {
             byte[] receiveData=new byte[ 1024 ];
             DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
             socket.receive(packet); //recebe HELLO de novos nodes
-            String str = new String(packet.getData(), 0, packet.getLength());
             
+            String str = new String(packet.getData(), 0, packet.getLength());
+            Display.info(str);
             //aloca mais memoria para guardar as portas dos nodes
             int[] ports_aux = new int[Nodes+1];
             String [] nodesIP_aux = new String[Nodes +1];

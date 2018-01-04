@@ -32,8 +32,12 @@ public class ScannerProtocol {
         WHOAMI("whoami", "Return the IP:PORT of node", 
                 "whoami", Arrays.asList("who", "quem", "info", "information")),
         DELAY("delay", "Show delays for other nodes",
-                "delay", Arrays.asList("latency", "atrasos", "latencias", "delays", "atrasos", "latencia"));
+                "delay", Arrays.asList("latency", "atrasos", "latencias", "delays", "atrasos", "latencia")),
+        NMESSAGE("nmsg", "Send N messages to node i", 
+                "nmsg <i> <N> <text>", Arrays.asList("nmsgs","nmensagens", "nmessage", "nsms")), 
         
+        NMESSAGE2("nmsg2", "Send N messages to node i and k", 
+                "nmsg2 <i> <k> <N> <text>", Arrays.asList("nmsgs2","nmensagens2", "nmessage2", "nsms2"));
 
         private final String word;
         private final String help;
@@ -84,6 +88,15 @@ public class ScannerProtocol {
         if(MessageType.MESSAGE.getKeys().contains(word)) {
             sendMessage(Integer.parseInt(words.get(1)), message.substring(message.indexOf(words.get(1)) + words.get(1).length()).trim());
         }
+        
+        if(MessageType.NMESSAGE.getKeys().contains(word)) {
+            sendNMessages(Integer.parseInt(words.get(1)),Integer.parseInt(words.get(2)), 
+            message.substring(message.indexOf(words.get(2)) + words.get(2).length()).trim());
+        }
+        if(MessageType.NMESSAGE2.getKeys().contains(word)) {
+            sendNMessages2(Integer.parseInt(words.get(1)),Integer.parseInt(words.get(2)),
+            Integer.parseInt(words.get(3)), message.substring(message.indexOf(words.get(3)) + words.get(3).length()).trim());
+        }
 
         return false;
     }
@@ -124,4 +137,57 @@ public class ScannerProtocol {
             socket.send(packet, toId);
         }
     }
+    private void sendNMessages(int toId, int N, String msg)throws UnknownHostException, IOException {
+        
+        String toIp = socket.getIpById(toId);
+        String msgInfo;
+        int toPort = socket.getPortById(toId);
+
+        if(toPort == -1){
+            System.out.println("Node "+toId+" doesn't exist !");
+        }
+        else{
+            InetAddress address = InetAddress.getByName(toIp);
+            //envio de N mensagens para um unico nó
+            for(int i=1 ; i<= N ; i++){
+                msgInfo = msg +" message number:"+ Integer.toString(i);
+                DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), address, toPort);
+                socket.send(packet,toId);
+                Display.info("Enviado: " + msg +"\n\r");
+            }
+ 
+            
+        }
+    }
+    private void sendNMessages2(int toId1, int toId2, int N, String msg)throws UnknownHostException, IOException {
+        
+        String toIp1 = socket.getIpById(toId1);
+        String toIp2 = socket.getIpById(toId2);
+
+        String msgInfo;
+        int toPort1 = socket.getPortById(toId1);
+        int toPort2 = socket.getPortById(toId2);
+
+        if(toPort1 == -1){
+            System.out.println("Node "+toId1+" doesn't exist !");
+        }
+        else if(toPort2 == -1){
+            System.out.println("Node "+toId2+" doesn't exist !");
+        }
+        else{
+            InetAddress address = InetAddress.getByName(toIp1);
+            //envio de N mensagens para um unico nó
+            for(int i=1 ; i<= N ; i++){
+                msgInfo = msg +" message number:"+ Integer.toString(i);
+                DatagramPacket packet1 = new DatagramPacket(msg.getBytes(), msg.length(), address, toPort1);
+                DatagramPacket packet2 = new DatagramPacket(msg.getBytes(), msg.length(), address, toPort2);
+                socket.send(packet1,toId1);
+                socket.send(packet2,toId2);
+                Display.info("Enviado: " + msgInfo +"\n\r");
+            }
+ 
+            
+        }
+    }
+    
 }
